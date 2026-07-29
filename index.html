@@ -279,6 +279,43 @@
   .mail-cancel{font-family:inherit;font-size:12px;padding:8px 14px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;cursor:pointer}
   .mail-go{font-family:inherit;font-size:12px;font-weight:600;padding:8px 16px;border:1px solid var(--navy);background:var(--navy);color:#fff;border-radius:8px;cursor:pointer}
   .saved-flash{font-size:11px;color:var(--green);margin-top:5px;height:13px;transition:opacity .3s}
+  /* ---- informe completo de una competidora (dossier) ---- */
+  .dos-open{font-family:inherit;font-size:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;display:inline-flex;align-items:center;gap:5px;line-height:1.1}
+  .dos-open:hover{opacity:.7}
+  .dos-ico{font-size:9px;color:var(--muted)}
+  .cmp-t th .dos-open{justify-content:flex-end;width:100%}
+  .cc-lab .dos-open{justify-content:center}
+  .dos-backdrop{display:none;position:fixed;inset:0;background:rgba(15,25,45,.6);z-index:1100;padding:20px 14px;overflow:auto}
+  .dos-backdrop.on{display:block}
+  .dos-modal{background:#fff;max-width:1040px;margin:0 auto;box-shadow:0 12px 44px rgba(0,0,0,.35)}
+  .dos-head{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:13px 20px;display:flex;align-items:center;gap:14px;z-index:3}
+  .dos-head img{max-height:26px;max-width:120px;object-fit:contain}
+  .dos-name{font-size:15px;font-weight:700;color:var(--navy)}
+  .dos-razon{font-size:11px;color:var(--muted);margin-top:2px}
+  .dos-x{margin-left:auto;font-family:inherit;font-size:17px;line-height:1;padding:4px 11px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  .dos-x:hover{background:#f0f3f8}
+  .dos-body{padding:14px 20px 26px}
+  .dos-h{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--navy);margin:22px 0 7px;padding-bottom:5px;border-bottom:2px solid var(--navy)}
+  .dos-t{width:100%;border-collapse:collapse;font-size:12px}
+  .dos-t td,.dos-t th{padding:4px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+  .dos-t td:first-child,.dos-t th:first-child{text-align:left;white-space:normal}
+  .dos-t th{font-size:10.5px;color:var(--navy);text-transform:uppercase;letter-spacing:.02em;background:#f7f9fc}
+  .dos-t tr.dos-sec td{background:var(--navy);color:#fff;font-weight:800;text-transform:uppercase;font-size:10.5px;letter-spacing:.03em;text-align:left}
+  .dos-t tr.dos-sub td{font-weight:700;background:#f4f7fc}
+  .dos-t tr.dos-tot td{font-weight:800;background:#eef3fb;border-top:1px solid #ccd5e2}
+  .dos-t tr.dos-calc td{font-style:italic;color:#7a5c00;background:#fffbef}
+  .dos-t .neg{color:var(--red)}
+  .dos-t .dnd{color:#aab2bd}
+  .dos-ficha{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:0 20px;font-size:12px}
+  .dos-ficha div{display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px solid var(--line)}
+  .dos-ficha span:first-child{color:var(--muted)}
+  .dos-ficha span:last-child{text-align:right;font-weight:600}
+  .dos-notas{font-size:12px;line-height:1.55;margin:0;padding-left:18px}
+  .dos-notas li{margin:5px 0}
+  .dos-warn{font-size:12.5px;line-height:1.55;background:#fff8e6;border:1px solid #f0d998;padding:11px 13px;margin:4px 0 6px}
+  .dos-fuente{font-size:11px;color:var(--muted);line-height:1.5;margin-top:20px;border-top:1px solid var(--line);padding-top:10px}
+  .dos-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  @media(max-width:760px){.dos-backdrop{padding:0}.dos-body{padding:12px 12px 20px}.dos-t{min-width:420px}}
   /* look & feel: ángulos rectos en todos los elementos */
   *{border-radius:0 !important}
   /* botón/cajón de controles: ocultos en escritorio */
@@ -462,6 +499,16 @@
         <div id="noteList"></div>
       </div>
     </div>
+  </div>
+</div>
+<div id="dosBackdrop" class="dos-backdrop">
+  <div class="dos-modal">
+    <div class="dos-head">
+      <div id="dosLogo"></div>
+      <div><div class="dos-name" id="dosName"></div><div class="dos-razon" id="dosRazon"></div></div>
+      <button class="dos-x" id="dosClose" title="Cerrar (Esc)">✕</button>
+    </div>
+    <div class="dos-body" id="dosBody"></div>
   </div>
 </div>
 <div id="report"></div>
@@ -1177,6 +1224,258 @@ const BENCH=[
    ebitdaPct:0.4648, ebitPct:0.4647, netoPct:0.3601,
    comisEmp:9381333.34/28, costePersEmp:1537845.33/28, primasEmp:null, comPrima:null, retroEff:0, color:'#d94f96'},
 ];
+
+// ---- informe completo por competidora (eInforma / Registro Mercantil) ----
+// Solo figuran aquí las compañías cuyo informe íntegro tenemos descargado. Para el resto
+// el modal muestra el resumen que alimenta la comparativa y avisa de que falta el informe.
+// Filas: ['s',título] sección · ['t',…] subtotal · ['T',…] total · ['i',…] subepígrafe · ['c',…] cálculo propio
+const DOS_Y=[2024,2023,2022];
+const DOSSIER={
+ weecover:{
+  razon:'INSURTECH SOLUTIONS CORREDURÍA DE SEGUROS S.L.',
+  fuente:'eInforma — INFORMA D&B S.A.U. · Balance y Cuenta de Resultados emitido el 29/07/2026 (último dato incorporado el 09/06/2026). Cuentas anuales individuales depositadas en el Registro Mercantil (depósito 2024 disponible desde el 12/12/2025).',
+  ficha:[['NIF','B67414250'],['Nombre comercial','Weecover'],['Número D-U-N-S','469069972'],['Situación','Activa'],['Constitución','03/04/2019'],['Domicilio','C/ Vía Augusta 158, P.3 Pta.1 — 08006 Barcelona'],['Web','www.weecover.com'],['CNAE 2025','6622 — Agentes y corredores de seguros'],['Tamaño (UE)','Empresa pequeña'],['Empleados (2024)','13'],['Capital social','8.175 €'],['Operaciones internacionales','No constan']],
+  balance:[
+   ['s','ACTIVO'],
+   ['t','A) ACTIVO NO CORRIENTE',[1618765.28,1181141.32,838741.87]],
+   ['','I. Inmovilizado intangible',[983008.15,737520.65,490524.83]],
+   ['','II. Inmovilizado material',[10263.39,7317.03,9915.44]],
+   ['','V. Inversiones financieras a largo plazo',[53151.13,48100.00,48100.00]],
+   ['','VI. Activos por impuesto diferido',[572342.61,388203.64,290201.60]],
+   ['t','B) ACTIVO CORRIENTE',[4289286.05,838850.42,975984.97]],
+   ['','II. Deudores comerciales y otras cuentas a cobrar',[486884.43,275063.18,22836.76]],
+   ['i','1. Clientes por ventas y prestaciones de servicios',[482199.72,270378.47,17378.50]],
+   ['i','2. Accionistas (socios) por desembolsos exigidos',[3000.00,3000.00,3000.00]],
+   ['i','3. Otros deudores',[1684.71,1684.71,2458.26]],
+   ['','IV. Inversiones financieras a corto plazo',[13.12,13.12,13.12]],
+   ['','VI. Efectivo y otros activos líquidos equivalentes',[3802388.50,563774.12,953135.09]],
+   ['T','TOTAL ACTIVO',[5908051.33,2019991.74,1814726.84]],
+   ['s','PATRIMONIO NETO Y PASIVO'],
+   ['t','A) PATRIMONIO NETO',[708336.66,1225450.45,1557025.96]],
+   ['','A-1) Fondos propios',[703907.03,1218976.38,1548507.44]],
+   ['i','I. Capital escriturado',[5863.00,5863.00,5863.00]],
+   ['i','II. Prima de emisión',[2520407.80,2520407.80,2520407.80]],
+   ['i','V. Resultados de ejercicios anteriores',[-1307294.42,-977763.36,-415527.62]],
+   ['i','VII. Resultado del ejercicio',[-515069.35,-329531.06,-562235.74]],
+   ['','A-3) Subvenciones, donaciones y legados recibidos',[4429.63,6474.07,8518.52]],
+   ['t','B) PASIVO NO CORRIENTE',[337950.59,460330.47,159966.08]],
+   ['','I. Provisiones a largo plazo',[16534.24,null,null]],
+   ['','II. Deudas a largo plazo',[319939.81,458172.44,157126.57]],
+   ['i','1. Deudas con entidades de crédito',[7386.66,10397.78,13320.03]],
+   ['i','3. Otras deudas a largo plazo',[312553.15,447774.66,143806.54]],
+   ['','IV. Pasivos por impuesto diferido',[1476.54,2158.03,2839.51]],
+   ['t','C) PASIVO CORRIENTE',[4861764.08,334210.82,97734.80]],
+   ['','II. Deudas a corto plazo',[4329090.64,69124.90,37862.92]],
+   ['i','1. Deudas con entidades de crédito',[6572.39,5042.36,5323.55]],
+   ['i','3. Otras deudas a corto plazo',[4322518.25,64082.54,32539.37]],
+   ['','IV. Acreedores comerciales y otras cuentas a pagar',[524223.40,265085.92,59871.88]],
+   ['i','1. Proveedores',[920.92,429.14,1229.87]],
+   ['i','2. Otros acreedores',[523302.48,264656.78,58642.01]],
+   ['','V. Periodificaciones a corto plazo',[8450.04,null,null]],
+   ['T','TOTAL PATRIMONIO NETO Y PASIVO',[5908051.33,2019991.74,1814726.84]]],
+  pyg:[
+   ['','1. Importe neto de la cifra de negocios',[1637773.22,809840.89,155564.89]],
+   ['','3. Trabajos realizados por la empresa para su activo',[481607.97,396911.19,201558.09]],
+   ['','6. Gastos de personal',[-858754.03,-634015.57,-697079.70]],
+   ['','7. Otros gastos de explotación',[-1662489.03,-813531.69,-336609.97]],
+   ['','8. Amortización del inmovilizado',[-239415.64,-153079.73,-58773.53]],
+   ['','9. Imputación de subvenciones de inmovilizado no financiero',[2725.93,2725.93,2271.61]],
+   ['','11. Deterioro y rdo. por enajenaciones del inmovilizado',[-46.58,null,null]],
+   ['','12. Otros resultados',[-340.41,739.21,886.11]],
+   ['t','A) RESULTADO DE EXPLOTACIÓN',[-638938.57,-390420.42,-732182.50]],
+   ['','13. Ingresos financieros',[null,null,197.84]],
+   ['','14. Gastos financieros',[-60339.29,-36764.25,-7793.18]],
+   ['','15. Variación de valor razonable en instrumentos financieros',[2301.13,null,null]],
+   ['','16. Diferencias de cambio',[-2231.59,-348.43,-49.35]],
+   ['t','B) RESULTADO FINANCIERO',[-60269.75,-37112.68,-7644.69]],
+   ['t','C) RESULTADO ANTES DE IMPUESTOS',[-699208.32,-427533.10,-739827.19]],
+   ['','19. Impuestos sobre beneficios',[184138.97,98002.04,177591.45]],
+   ['T','D) RESULTADO DEL EJERCICIO',[-515069.35,-329531.06,-562235.74]],
+   ['s','MAGNITUDES DERIVADAS'],
+   ['','Margen bruto',[2119381.19,1206741.43,357122.98]],
+   ['t','EBITDA',[-399522.93,-237340.69,-673408.97]],
+   ['t','EBIT',[-638938.57,-390420.42,-732182.50]]],
+  ratios:[
+   ['s','EQUILIBRIO'],
+   ['','Fondo de maniobra',[-572478.03,504639.60,878250.17],'€'],
+   ['','Ratio fondo de maniobra',[-0.10,0.25,0.48],''],
+   ['','Ratio de solidez',[0.43,1.03,1.85],''],
+   ['','Periodo medio de cobro',[106,120,40],'días'],
+   ['','Periodo medio de pago',[0,0,1],'días'],
+   ['s','LIQUIDEZ'],
+   ['','Ratio de liquidez',[88.22,250.99,998.61],'%'],
+   ['','Ratio de liquidez inmediata',[78.21,168.69,975.24],'%'],
+   ['s','ENDEUDAMIENTO'],
+   ['','Porcentaje de endeudamiento',[78.69,26.10,10.74],'%'],
+   ['','Coste medio de financiación externa',[0.01,0.07,0.04],''],
+   ['','Cobertura del servicio de la deuda',[-16.86,-2.99,-0.39],''],
+   ['','Cobertura de intereses',[-10.59,-10.62,-93.95],''],
+   ['s','ACTIVIDAD'],
+   ['','Autofinanciación generada por las ventas',[-16.83,-21.79,-323.63],'%'],
+   ['','Autofinanciación generada por los activos',[-4.67,-8.73,-27.74],'%'],
+   ['','Punto muerto',[0.72,0.68,0.17],''],
+   ['','Facturación media por empleado',[125403.77,86706.73,14484.63],'€'],
+   ['','Coste medio por empleado',[65754.52,67881.75,64905.00],'€'],
+   ['','Rotación de activos',[0.28,0.40,0.09],''],
+   ['s','RESULTADOS'],
+   ['','Rentabilidad económica (ROA)',[-10.81,-19.33,-40.35],'%'],
+   ['','Rentabilidad de explotación',[-6.76,-11.75,-37.11],'%'],
+   ['','Rentabilidad financiera (ROE)',[-99.33,-35.07,-47.78],'%']],
+  sector:{cnae:'6622 — Actividades de agentes y corredores de seguros',empresas:3102,tamano:'0 – 2.000.000 €',
+   balance:[['Activo no corriente',27.40,38.64],['Activo corriente',72.60,61.36],['Patrimonio neto',11.99,68.68],['Pasivo no corriente',5.72,10.72],['Pasivo corriente',82.29,20.59]],
+   pyg:[['Ventas',77.28,97.49],['Margen bruto',100.00,92.63],['EBITDA',-18.85,16.10],['EBIT',-30.15,13.74],['Resultado neto',-24.30,10.43]]},
+  notas:[
+   'Las ventas crecieron un 102,2% entre 2023 y 2024, y un 420,6% entre 2022 y 2023, pero la compañía encadena tres ejercicios en pérdidas: −562.236 € (2022), −329.531 € (2023) y −515.069 € (2024).',
+   'El activo total creció un 192,5% en 2024 financiado con un aumento del endeudamiento del 554,4%: el pasivo corriente pasó de 334.211 € a 4.861.764 € (82,3% del balance, frente al 20,6% del sector), casi todo en «otras deudas a corto plazo».',
+   'A la vez, la tesorería subió a 3.802.389 € y el patrimonio neto cayó un 42,2%. El fondo de maniobra se vuelve negativo (−572.478 €) y la liquidez baja del 251% al 88%.',
+   'Capitaliza desarrollo de producto: 481.608 € de «trabajos realizados por la empresa para su activo» en 2024 y 983.008 € de inmovilizado intangible acumulado. En la comparativa esa cifra va en «otros ingresos», no en comisiones.',
+   'Los 572.343 € de activos por impuesto diferido son créditos fiscales por las pérdidas acumuladas; sostienen el resultado vía un impuesto positivo de 184.139 €.']},
+ terranea:{
+  razon:'TERRANEA 2000 CORREDURÍA DE SEGUROS S.L.',
+  fuente:'eInforma — INFORMA D&B S.A.U. · Balance y Cuenta de Resultados emitido el 29/07/2026 (último dato el 22/07/2026; información contrastada el 02/06/2026). Cuentas anuales individuales del Registro Mercantil (depósito 2024 disponible desde el 16/11/2025).',
+  ficha:[['NIF','B82014242'],['Denominación antigua','Manuel López Hidalgo Correduría de Seguros S.L.'],['Número D-U-N-S','863223566'],['Situación','Activa'],['Constitución','24/03/1998'],['Teléfono','916403001'],['Web','www.terranea.es'],['CNAE 2025','6622 — Agentes y corredores de seguros'],['Tamaño (UE)','Empresa pequeña'],['Empleados','28 en 2024 y 2023 · 26 en 2022 (100% fijos)'],['Capital social','3.005,06 €'],['Entidades bancarias','1']],
+  balance:[
+   ['s','ACTIVO'],
+   ['t','A) ACTIVO NO CORRIENTE',[13081618.59,10958409.87,8888252.39]],
+   ['','II. Inmovilizado material',[12752.59,13385.40,3394.64]],
+   ['','V. Inversiones financieras a largo plazo',[13068866.00,10945024.47,8884857.75]],
+   ['t','B) ACTIVO CORRIENTE',[7308679.40,3160774.70,2388548.15]],
+   ['','II. Deudores comerciales y otras cuentas a cobrar',[797354.66,605895.32,483901.59]],
+   ['i','1. Clientes por ventas y prestaciones de servicios',[453526.43,329846.40,207922.67]],
+   ['i','3. Otros deudores',[343828.23,276048.92,275978.92]],
+   ['','IV. Inversiones financieras a corto plazo',[400248.00,400248.00,null]],
+   ['','VI. Efectivo y otros activos líquidos equivalentes',[6111076.74,2154631.38,1904646.56]],
+   ['T','TOTAL ACTIVO',[20390297.99,14119184.57,11276800.54]],
+   ['s','PATRIMONIO NETO Y PASIVO'],
+   ['t','A) PATRIMONIO NETO',[10330298.68,6952456.32,2974806.94]],
+   ['','A-1) Fondos propios',[10330298.68,6952456.32,2974806.94]],
+   ['i','I. Capital escriturado',[3005.06,3005.06,3005.06]],
+   ['i','III. Reservas',[6949451.26,2971801.88,1993600.45]],
+   ['i','VII. Resultado del ejercicio',[3377842.36,3977649.38,978201.43]],
+   ['t','B) PASIVO NO CORRIENTE',[0,0,0]],
+   ['t','C) PASIVO CORRIENTE',[10059999.31,7166728.25,8301993.60]],
+   ['T','TOTAL PATRIMONIO NETO Y PASIVO',[20390297.99,14119184.57,11276800.54]]],
+  balanceNota:'El informe no desglosa por epígrafes el pasivo corriente (10,06 M€ en 2024); solo consta el total.',
+  pyg:[
+   ['','1. Importe neto de la cifra de negocios',[9381333.34,5634827.50,4169678.97]],
+   ['','4. Aprovisionamientos',[-16039.41,-20951.67,-23524.31]],
+   ['','5. Otros ingresos de explotación',[null,1684.00,9372.00]],
+   ['','6. Gastos de personal',[-1537845.33,-1379790.60,-1316463.41]],
+   ['','7. Otros gastos de explotación',[-5875775.13,-4114537.72,-6323536.65]],
+   ['','8. Amortización del inmovilizado',[-1139.54,-1139.24,-1091.77]],
+   ['','10. Excesos de provisiones',[2408025.00,5125000.00,4800000.00]],
+   ['','12. Otros resultados',[681.03,-4697.05,-10166.26]],
+   ['t','A) RESULTADO DE EXPLOTACIÓN',[4359239.96,5240395.22,1304268.57]],
+   ['','13. Ingresos financieros',[144549.85,63137.29,null]],
+   ['t','B) RESULTADO FINANCIERO',[144549.85,63137.29,null]],
+   ['t','C) RESULTADO ANTES DE IMPUESTOS',[4503789.81,5303532.51,1304268.57]],
+   ['','19. Impuestos sobre beneficios',[-1125947.45,-1325883.13,-326067.14]],
+   ['T','D) RESULTADO DEL EJERCICIO',[3377842.36,3977649.38,978201.43]],
+   ['s','MAGNITUDES DERIVADAS'],
+   ['','Margen bruto',[9365293.93,5615559.83,4155526.66]],
+   ['t','EBITDA',[4360379.50,5241534.46,1305360.34]],
+   ['t','EBIT',[4359239.96,5240395.22,1304268.57]],
+   ['c','EBITDA sin excesos de provisiones (cálculo propio)',[1952354.50,116534.46,-3494639.66]]],
+  ratios:[
+   ['s','EQUILIBRIO'],
+   ['','Fondo de maniobra',[-2751319.91,-4005953.55,-5913445.45],'€'],
+   ['','Ratio fondo de maniobra',[-0.14,-0.28,-0.52],''],
+   ['','Ratio de solidez',[0.79,0.63,0.34],''],
+   ['','Periodo medio de cobro',[17,21,18],'días'],
+   ['','Periodo medio de pago',[0,0,0],'días'],
+   ['s','LIQUIDEZ'],
+   ['','Ratio de liquidez',[72.65,44.10,28.77],'%'],
+   ['','Ratio de liquidez inmediata',[64.72,35.65,22.94],'%'],
+   ['s','ENDEUDAMIENTO'],
+   ['','Porcentaje de endeudamiento',[28.81,23.67,24.99],'%'],
+   ['','Cobertura del servicio de la deuda',[1.74,0.84,2.88],''],
+   ['s','ACTIVIDAD'],
+   ['','Autofinanciación generada por las ventas',[36.02,70.61,23.49],'%'],
+   ['','Autofinanciación generada por los activos',[16.57,28.18,8.68],'%'],
+   ['','Punto muerto',[1.87,14.29,1.46],''],
+   ['','Facturación media por empleado',[326875.73,204086.47,157465.22],'€'],
+   ['','Coste medio por empleado',[53583.46,49974.31,49715.39],'€'],
+   ['','Rotación de activos',[0.46,0.40,0.37],''],
+   ['s','RESULTADOS'],
+   ['','Rentabilidad económica (ROA)',[21.38,37.12,11.57],'%'],
+   ['','Rentabilidad de explotación',[21.39,37.12,11.58],'%'],
+   ['','Rentabilidad financiera (ROE)',[43.60,76.28,43.84],'%']],
+  sector:{cnae:'6622 — Actividades de agentes y corredores de seguros',empresas:94,tamano:'2.000.000 – 10.000.000 €',
+   balance:[['Activo no corriente',64.16,34.13],['Activo corriente',35.84,65.87],['Patrimonio neto',50.66,48.10],['Pasivo no corriente',null,9.87],['Pasivo corriente',49.34,42.03]],
+   pyg:[['Ventas',100.00,98.55],['Margen bruto',99.83,83.48],['EBITDA',46.48,14.60],['EBIT',46.47,12.85],['Resultado neto',36.01,10.00]]},
+  notas:[
+   'Las ventas se multiplicaron por 2,25 en tres años (4,17 M€ → 5,63 M€ → 9,38 M€) con la plantilla estable en 28 personas: 326.876 € de facturación por empleado, el doble que cualquier otra de la comparativa.',
+   'El resultado depende de los excesos de provisiones: 2,41 M€ en 2024, 5,13 M€ en 2023 y 4,80 M€ en 2022. Es una reversión contable no recurrente. Sin ella el EBITDA de 2024 sería 1,95 M€ (20,8% sobre comisiones) en vez de 4,36 M€ (46,5%), y el de 2022 habría sido negativo.',
+   'Por eso el EBIT cae un 16,8% en 2024 pese al salto de ventas del 66,5%: bajó el exceso de provisiones, no el negocio.',
+   'Estructura atípica para una correduría: «otros gastos de explotación» pesa un 62,6% sobre ventas frente a un 16,4% de personal. Sus cuentas no desglosan retrocesión a colaboradores, pero esa proporción sugiere distribución externalizada.',
+   'El activo no corriente (64,2% del balance, 30 puntos por encima del sector) son casi en su totalidad inversiones financieras a largo plazo: 13,07 M€. El fondo de maniobra es negativo los tres años (−2,75 M€ en 2024).',
+   'Los 3.377.842,36 € de resultado de 2024 se destinaron íntegramente a reserva voluntaria; no hubo reparto de dividendo.']}
+};
+// ---- render del informe completo ----
+const dosFmt=(v,u)=>{
+  if(v==null||v==='') return '<span class="dnd">–</span>';
+  const d= u==='días'?0:2;
+  const s=v.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d})+(u==='€'?' €':u==='%'?' %':u==='días'?' d':'');
+  return v<0? `<span class="neg">${s}</span>` : s;
+};
+const dosRows=(rows,defU)=>rows.map(r=>{
+  const k=r[0], label=r[1], vals=r[2], u=(r[3]!==undefined?r[3]:defU);
+  if(k==='s') return `<tr class="dos-sec"><td colspan="${DOS_Y.length+1}">${label}</td></tr>`;
+  const cls= k==='T'?' class="dos-tot"' : k==='t'?' class="dos-sub"' : k==='c'?' class="dos-calc"' : '';
+  const pad= k==='i'?' style="padding-left:24px"':'';
+  return `<tr${cls}><td${pad}>${label}</td>`+DOS_Y.map((y,j)=>`<td>${dosFmt(vals?vals[j]:null,u)}</td>`).join('')+`</tr>`;
+}).join('');
+const dosTable=(rows,defU)=>`<div class="dos-scroll"><table class="dos-t"><tr><th></th>${DOS_Y.map(y=>`<th>${y}</th>`).join('')}</tr>${dosRows(rows,defU)}</table></div>`;
+const dosSecRow=(l,e,s)=>{ const d=(e==null||s==null)?null:Math.round((e-s)*100)/100;
+  return `<tr><td>${l}</td><td>${dosFmt(e,'%')}</td><td>${dosFmt(s,'%')}</td><td>${dosFmt(d,'%')}</td></tr>`; };
+const dosSector=s=>`<div class="dos-scroll"><table class="dos-t">`+
+  `<tr><th>% sobre el total activo</th><th>Empresa 2024</th><th>Sector</th><th>Diferencia</th></tr>`+
+  s.balance.map(r=>dosSecRow(r[0],r[1],r[2])).join('')+
+  `<tr><th>% sobre ingresos de explotación</th><th>Empresa 2024</th><th>Sector</th><th>Diferencia</th></tr>`+
+  s.pyg.map(r=>dosSecRow(r[0],r[1],r[2])).join('')+`</table></div>`;
+const dosResumen=c=>{
+  const row=(l,v,f)=>`<tr><td>${l}</td><td>${v==null?'<span class="dnd">–</span>':f(v)}</td></tr>`;
+  return `<div class="dos-scroll"><table class="dos-t"><tr><th>Magnitud (2024)</th><th>Valor</th></tr>`+
+   row('Comisiones / ingresos',c.ingresos,eur)+row('Otros ingresos de explotación',c.otrosIngresos,eur)+
+   row('Retrocesión a colaboradores',c.retro,eur)+row('Gastos de personal',c.personal,eur)+
+   row('Otros gastos de explotación',c.otros,eur)+row('EBITDA',c.ebitda,eur)+row('EBIT',c.ebit,eur)+
+   row('Resultado neto',c.neto,eur)+row('Nº de empleados',c.empleados,num0)+
+   row('Facturación por empleado',c.comisEmp,eur)+row('Coste medio por empleado',c.costePersEmp,eur)+
+   row('Primas intermediadas por empleado',c.primasEmp,eur)+row('Margen EBITDA',c.ebitdaPct,pct)+`</table></div>`;
+};
+function openDossier(key){
+  const c=BENCH.find(x=>x.key===key); if(!c) return;
+  const d=DOSSIER[key];
+  document.getElementById('dosLogo').innerHTML= c.logo? `<img src="${c.logo}" alt="${escAttr(c.name)}">` : '';
+  document.getElementById('dosName').textContent=c.name;
+  document.getElementById('dosRazon').textContent= d? d.razon : 'Cuentas del ejercicio 2024 · Registro Mercantil';
+  let h='';
+  if(d){
+    h+=`<div class="dos-h" style="margin-top:6px">Ficha de la empresa</div><div class="dos-ficha">`+
+       d.ficha.map(f=>`<div><span>${f[0]}</span><span>${f[1]}</span></div>`).join('')+`</div>`;
+    h+=`<div class="dos-h">Resumen que alimenta la comparativa (2024)</div>`+dosResumen(c);
+    h+=`<div class="dos-h">Balance de situación (€)</div>`+dosTable(d.balance,'€');
+    if(d.balanceNota) h+=`<p class="dos-razon" style="margin:6px 0 0">${d.balanceNota}</p>`;
+    h+=`<div class="dos-h">Cuenta de pérdidas y ganancias (€)</div>`+dosTable(d.pyg,'€');
+    h+=`<div class="dos-h">Ratios principales</div>`+dosTable(d.ratios,'');
+    h+=`<div class="dos-h">Comparativa sectorial — CNAE ${d.sector.cnae}</div>`+
+       `<p class="dos-razon" style="margin:0 0 7px">${num0(d.sector.empresas)} empresas del sector · tramo de facturación ${d.sector.tamano}</p>`+dosSector(d.sector);
+    h+=`<div class="dos-h">Lectura de las cuentas</div><ul class="dos-notas">`+d.notas.map(n=>`<li>${n}</li>`).join('')+`</ul>`;
+    h+=`<p class="dos-fuente"><b>Fuente:</b> ${d.fuente}</p>`;
+  } else {
+    h+=`<div class="dos-warn"><b>Informe completo no cargado.</b> De ${escAttr(c.name)} solo tenemos las magnitudes de 2024 que alimentan la comparativa. Para desplegar aquí su balance, la cuenta de resultados de los tres últimos ejercicios, los ratios y la comparativa sectorial, pásame su informe de eInforma y lo incorporo igual que Weecover y Terránea.</div>`;
+    h+=`<div class="dos-h">Resumen que alimenta la comparativa (2024)</div>`+dosResumen(c);
+  }
+  document.getElementById('dosBody').innerHTML=h;
+  const bd=document.getElementById('dosBackdrop');
+  bd.classList.add('on'); bd.scrollTop=0; document.body.style.overflow='hidden';
+}
+function closeDossier(){ document.getElementById('dosBackdrop').classList.remove('on'); document.body.style.overflow=''; }
+document.getElementById('dosClose').addEventListener('click',closeDossier);
+document.getElementById('dosBackdrop').addEventListener('click',e=>{ if(e.target.id==='dosBackdrop') closeDossier(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElementById('dosBackdrop').classList.contains('on')) closeDossier(); });
+document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-dos]'); if(b){ e.preventDefault(); openDossier(b.dataset.dos); } });
+
 function ourMetrics(){
   const R=compute(V), Y= YF>0?YF:HY, t=totalCol(R.mon,Y), emp=(t.dir||0)+(t.est||0);
   const otrosSinRetro=(t.esub||0)-(t.colab||0);
@@ -1224,7 +1523,11 @@ function renderComp(){
   renderCmpSelector();
   const you=ourMetrics(), SEL=BENCH.filter(c=>CMP_SEL.has(c.key)), all=[you,...SEL];
   // etiqueta de competidor: logo si lo tiene, si no el nombre
-  const clab=(c,h)=> c.logo? `<img class="cmp-logo" src="${c.logo}" alt="${escAttr(c.name)}" title="${escAttr(c.name)}" style="height:${h||24}px">` : c.name;
+  const clab=(c,h)=>{
+    const inner= c.logo? `<img class="cmp-logo" src="${c.logo}" alt="${escAttr(c.name)}" style="height:${h||24}px">` : c.name;
+    if(!c.key||c.key==='you') return inner;
+    return `<button type="button" class="dos-open" data-dos="${c.key}" title="Ver el informe completo de ${escAttr(c.name)}">${inner}<span class="dos-ico">▤</span></button>`;
+  };
   // color de la celda «Tu modelo»: rojo=negativo · amarillo=positivo pero peor que la competencia · verde=positivo y mejor (intensidad = magnitud)
   const mix=(r,g,b,t,allowWhite)=>{ const a=0.15+0.65*Math.max(0,Math.min(1,t)); const wh= allowWhite && a>0.5; return `background:rgba(${r},${g},${b},${a.toFixed(3)});color:${wh?'#fff':'#1a1a1a'};font-weight:700`; };
   const youCell=(v,bvals,better,fmt)=>{
@@ -1237,10 +1540,10 @@ function renderComp(){
       return `<td style="${mix(43,150,75,Math.abs(v-avg)/d,true)}">${fmt(v)}</td>`; }
     return `<td class="cmp-you" style="background:transparent">${fmt(v)}</td>`; // positivo pero peor → sin fondo
   };
-  document.getElementById('compNote').innerHTML=`Tu modelo se compara en el <b>Año ${you.year}</b> (run-rate; cambia el «Periodo» arriba para ver otro año). Las competidoras proceden de cuentas públicas (2024); elige arriba con cuáles compararte. En una correduría «ingresos» = comisiones. El modelo llega a nivel EBITDA (sin amortización ni impuestos), por eso EBIT/neto solo constan para las competidoras. Pasa el cursor por la <span class="info">i</span> de cada fila para ver qué mide.`;
+  document.getElementById('compNote').innerHTML=`Tu modelo se compara en el <b>Año ${you.year}</b> (run-rate; cambia el «Periodo» arriba para ver otro año). Las competidoras proceden de cuentas públicas (2024); elige arriba con cuáles compararte. En una correduría «ingresos» = comisiones. El modelo llega a nivel EBITDA (sin amortización ni impuestos), por eso EBIT/neto solo constan para las competidoras. Pasa el cursor por la <span class="info">i</span> de cada fila para ver qué mide, y <b>pulsa el nombre o el logo de cualquier competidora</b> (en la tabla o bajo los gráficos) para abrir su informe completo: balance, cuenta de resultados de tres ejercicios, ratios y comparativa sectorial.`;
   // gráfico de columnas verticales
   const bar=(title,fmt,prop)=>{
-    const vals=all.map(c=>({name:c.name,v:c[prop],color:c.color,logo:c.logo})), max=Math.max(...vals.map(x=>x.v||0))||1;
+    const vals=all.map(c=>({name:c.name,v:c[prop],color:c.color,logo:c.logo,key:c.key})), max=Math.max(...vals.map(x=>x.v||0))||1;
     return `<div class="cmp-metric"><div class="cmp-h">${title}${ic(prop)}</div><div class="cmp-cols">`+
       vals.map(x=>{ const h= x.v==null?0:Math.max(3,(x.v/max)*96);
         return `<div class="cmp-col"><div class="cc-plot"><div class="cc-val">${x.v==null?'n/d':fmt(x.v)}</div><div class="cc-bar" style="height:${h}px;background:${x.color}"></div></div><div class="cc-lab">${clab(x,18)}</div></div>`;
