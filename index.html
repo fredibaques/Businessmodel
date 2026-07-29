@@ -1170,6 +1170,12 @@ const BENCH=[
    otrosIngresosPct:484333.90/1637773.22, retroPct:0, personalPct:858754.03/1637773.22, otrosPct:1662876.02/1637773.22,
    ebitdaPct:-0.2439, ebitPct:-0.3901, netoPct:-0.3145,
    comisEmp:1637773.22/13, costePersEmp:858754.03/13, primasEmp:null, comPrima:null, retroEff:0, color:'#00a0a8'},
+ // Terránea 2000 Correduría de Seguros SL (NIF B82014242, antes Manuel López Hidalgo Correduría) — Registro Mercantil / eInforma 2024 (correduría estándar sin retrocesión; OJO: «otros ingresos» son 2.408.025 € de excesos de provisiones, partida no recurrente que infla el EBITDA: sin ella el margen sería 20,8% en vez de 46,5%)
+ {key:'terranea', name:'Terránea', empleados:28, ingresos:9381333.34, primas:null,
+   otrosIngresos:2408706.03, retro:0, personal:1537845.33, otros:5891814.54, ebitda:4360379.50, ebit:4359239.96, neto:3377842.36,
+   otrosIngresosPct:2408706.03/9381333.34, retroPct:0, personalPct:1537845.33/9381333.34, otrosPct:5891814.54/9381333.34,
+   ebitdaPct:0.4648, ebitPct:0.4647, netoPct:0.3601,
+   comisEmp:9381333.34/28, costePersEmp:1537845.33/28, primasEmp:null, comPrima:null, retroEff:0, color:'#d94f96'},
 ];
 function ourMetrics(){
   const R=compute(V), Y= YF>0?YF:HY, t=totalCol(R.mon,Y), emp=(t.dir||0)+(t.est||0);
