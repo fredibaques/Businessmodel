@@ -1176,63 +1176,64 @@ const LOGOS={
 const BENCH=[
  // Grupo Pacc — Registro Mercantil 2024 (modelo franquicia: aprovisionamientos = retrocesión a la red)
  {key:'pacc', name:'Pacc', empleados:127, ingresos:17220034, primas:145300000,
-   otrosIngresos:4768635, retro:10362150, personal:6663519, otros:2284878, ebitda:2718982, ebit:2310524, neto:1820859,
-   otrosIngresosPct:4768635/17220034, retroPct:10362150/17220034, personalPct:6663519/17220034, otrosPct:2284878/17220034,
+   otrosIngresos:4768635, retro:10362150, aprov:0, personal:6663519, otros:2284878, ebitda:2718982, ebit:2310524, neto:1820859,
+   otrosIngresosPct:4768635/17220034, retroPct:10362150/17220034, aprovPct:0, personalPct:6663519/17220034, otrosPct:2284878/17220034,
    ebitdaPct:0.1579, ebitPct:0.1342, netoPct:0.1057,
    comisEmp:136116, costePersEmp:52672, primasEmp:145300000/127, comPrima:17220034/145300000, retroEff:10362150/17220034,
    color:'#2e5496', logo:LOGOS.pacc},
  // Quadis — CORREDURÍA DE SEGUROS SEGUROSOL S.A. — Registro Mercantil / eInforma 2024 (correduría estándar, sin
  // retrocesión; «otros» incluye el deterioro del inmovilizado (78,92) y otros resultados (654,02) para cuadrar el EBITDA)
  {key:'quadis', name:'Quadis', empleados:24, ingresos:2819126.28, primas:null,
-   otrosIngresos:10230.86, retro:0, personal:1253837.90, otros:827314.39, ebitda:748204.85, ebit:723438.89, neto:549514.08,
-   otrosIngresosPct:10230.86/2819126.28, retroPct:0, personalPct:1253837.90/2819126.28, otrosPct:827314.39/2819126.28,
+   otrosIngresos:10230.86, retro:0, aprov:0, personal:1253837.90, otros:827314.39, ebitda:748204.85, ebit:723438.89, neto:549514.08,
+   otrosIngresosPct:10230.86/2819126.28, retroPct:0, aprovPct:0, personalPct:1253837.90/2819126.28, otrosPct:827314.39/2819126.28,
    ebitdaPct:0.2654, ebitPct:0.2566, netoPct:0.1949,
    comisEmp:116782.37, costePersEmp:51940.26, primasEmp:null, comPrima:null, retroEff:0, color:'#c55a11', logo:LOGOS.quadis},
- // AMV Hispania — Registro Mercantil 2024 (correduría estándar, sin retrocesión relevante; fuente eInforma)
- {key:'amv', name:'AMV', empleados:106, ingresos:11190062, primas:null,
-   otrosIngresos:1572, retro:0, personal:4508192, otros:4997120, ebitda:1686322, ebit:1527830, neto:506362,
-   otrosIngresosPct:1572/11190062, retroPct:0, personalPct:4508192/11190062, otrosPct:4997120/11190062,
-   ebitdaPct:0.1507, ebitPct:0.1365, netoPct:0.0452,
-   comisEmp:105766, costePersEmp:42611, primasEmp:null, comPrima:null, retroEff:0, color:'#548235', logo:LOGOS.amv},
+ // AMV Hispania Correduría de Seguros SL (NIF B…, Alcobendas) — Registro Mercantil / eInforma 2024 (correduría estándar,
+ // sin retrocesión ni aprovisionamientos; único caso de la comparativa con cuentas auditadas)
+ {key:'amv', name:'AMV', empleados:106, ingresos:11190062.15, primas:null,
+   otrosIngresos:1571.74, retro:0, aprov:0, personal:4508191.90, otros:4997119.81, ebitda:1686322.18, ebit:1527830.39, neto:506362.14,
+   otrosIngresosPct:1571.74/11190062.15, retroPct:0, aprovPct:0, personalPct:4508191.90/11190062.15, otrosPct:4997119.81/11190062.15,
+   ebitdaPct:0.1507, ebitPct:0.1365, netoPct:0.0453,
+   comisEmp:105766.18, costePersEmp:42610.51, primasEmp:null, comPrima:null, retroEff:0, color:'#548235', logo:LOGOS.amv},
  // Correduría C. Lorente — Registro Mercantil 2024 (correduría estándar, sin retrocesión relevante; fuente eInforma)
  {key:'lorente', name:'C. Lorente', empleados:7, ingresos:980648, primas:null,
-   otrosIngresos:69, retro:0, personal:478749, otros:188212, ebitda:313336, ebit:300855, neto:233477,
-   otrosIngresosPct:69/980648, retroPct:0, personalPct:478749/980648, otrosPct:188212/980648,
+   otrosIngresos:69, retro:0, aprov:0, personal:478749, otros:188212, ebitda:313336, ebit:300855, neto:233477,
+   otrosIngresosPct:69/980648, retroPct:0, aprovPct:0, personalPct:478749/980648, otrosPct:188212/980648,
    ebitdaPct:0.3195, ebitPct:0.3068, netoPct:0.2381,
    comisEmp:138902, costePersEmp:67811, primasEmp:null, comPrima:null, retroEff:0, color:'#7030a0'},
  // ERSM Insurance Brokers (antes RSM Correduría de Seguros) — Registro Mercantil 2024 / eInforma (correduría con fuerte subcontratación: «trabajos realizados por otras empresas» = retrocesión)
  {key:'ersm', name:'ERSM', empleados:143, ingresos:26830744.26, primas:null,
-   otrosIngresos:0, retro:15365702.77, personal:7975208.25, otros:3003449.38, ebitda:1073183.89, ebit:288187.34, neto:1459430.29,
-   otrosIngresosPct:0, retroPct:15365702.77/26830744.26, personalPct:7975208.25/26830744.26, otrosPct:3003449.38/26830744.26,
+   otrosIngresos:0, retro:15365702.77, aprov:0, personal:7975208.25, otros:3003449.38, ebitda:1073183.89, ebit:288187.34, neto:1459430.29,
+   otrosIngresosPct:0, retroPct:15365702.77/26830744.26, aprovPct:0, personalPct:7975208.25/26830744.26, otrosPct:3003449.38/26830744.26,
    ebitdaPct:0.0400, ebitPct:0.0107, netoPct:0.0544,
    comisEmp:26830744.26/143, costePersEmp:7975208.25/143, primasEmp:null, comPrima:null, retroEff:15365702.77/26830744.26, color:'#bf8f00', logo:LOGOS.ersm},
  // Gran Nogal Correduría de Seguros SL (NIF B86540945, Pozuelo de Alarcón) — Registro Mercantil / eInforma 2024 (correduría estándar; EBITDA y neto negativos; «otros» incluye deterioro de inmovilizado para cuadrar EBITDA)
  {key:'grannogal', name:'Gran Nogal', empleados:151, ingresos:8490762.17, primas:null,
-   otrosIngresos:118255.94, retro:0, personal:5575824.60, otros:3038685.33, ebitda:-5491.82, ebit:-57751.67, neto:-202623.49,
-   otrosIngresosPct:118255.94/8490762.17, retroPct:0, personalPct:5575824.60/8490762.17, otrosPct:3038685.33/8490762.17,
+   otrosIngresos:118255.94, retro:0, aprov:0, personal:5575824.60, otros:3038685.33, ebitda:-5491.82, ebit:-57751.67, neto:-202623.49,
+   otrosIngresosPct:118255.94/8490762.17, retroPct:0, aprovPct:0, personalPct:5575824.60/8490762.17, otrosPct:3038685.33/8490762.17,
    ebitdaPct:-0.0006, ebitPct:-0.0068, netoPct:-0.0239,
    comisEmp:56230.21, costePersEmp:36925.99, primasEmp:null, comPrima:null, retroEff:0, color:'#c00000'},
  // Weecover (INSURTECH SOLUTIONS CORREDURÍA DE SEGUROS SL, NIF B67414250, Barcelona) — Registro Mercantil / eInforma 2024 (insurtech en fase de inversión: capitaliza desarrollo como «trabajos realizados por la empresa para su activo», que aquí va en otros ingresos; EBITDA, EBIT y neto negativos)
  {key:'weecover', name:'Weecover', empleados:13, ingresos:1637773.22, primas:null,
-   otrosIngresos:484333.90, retro:0, personal:858754.03, otros:1662876.02, ebitda:-399522.93, ebit:-638938.57, neto:-515069.35,
-   otrosIngresosPct:484333.90/1637773.22, retroPct:0, personalPct:858754.03/1637773.22, otrosPct:1662876.02/1637773.22,
+   otrosIngresos:484333.90, retro:0, aprov:0, personal:858754.03, otros:1662876.02, ebitda:-399522.93, ebit:-638938.57, neto:-515069.35,
+   otrosIngresosPct:484333.90/1637773.22, retroPct:0, aprovPct:0, personalPct:858754.03/1637773.22, otrosPct:1662876.02/1637773.22,
    ebitdaPct:-0.2439, ebitPct:-0.3901, netoPct:-0.3145,
    comisEmp:1637773.22/13, costePersEmp:858754.03/13, primasEmp:null, comPrima:null, retroEff:0, color:'#00a0a8'},
  // Terránea 2000 Correduría de Seguros SL (NIF B82014242, antes Manuel López Hidalgo Correduría) — Registro Mercantil / eInforma 2024 (correduría estándar sin retrocesión; OJO: «otros ingresos» son 2.408.025 € de excesos de provisiones, partida no recurrente que infla el EBITDA: sin ella el margen sería 20,8% en vez de 46,5%)
  {key:'terranea', name:'Terránea', empleados:28, ingresos:9381333.34, primas:null,
-   otrosIngresos:2408706.03, retro:0, personal:1537845.33, otros:5891814.54, ebitda:4360379.50, ebit:4359239.96, neto:3377842.36,
-   otrosIngresosPct:2408706.03/9381333.34, retroPct:0, personalPct:1537845.33/9381333.34, otrosPct:5891814.54/9381333.34,
+   otrosIngresos:2408706.03, retro:0, aprov:16039.41, personal:1537845.33, otros:5875775.13, ebitda:4360379.50, ebit:4359239.96, neto:3377842.36,
+   otrosIngresosPct:2408706.03/9381333.34, retroPct:0, aprovPct:16039.41/9381333.34, personalPct:1537845.33/9381333.34, otrosPct:5875775.13/9381333.34,
    ebitdaPct:0.4648, ebitPct:0.4647, netoPct:0.3601,
    comisEmp:9381333.34/28, costePersEmp:1537845.33/28, primasEmp:null, comPrima:null, retroEff:0, color:'#d94f96'},
  // Life5 — YOUR LIFE CORREDURÍA DE SEGUROS SL (NIF B…, Madrid) — Registro Mercantil / eInforma 2024 (insurtech de vida en
  // fase de inversión: capitaliza desarrollo, patrimonio neto rescatado por aportación de socios, EBITDA/EBIT/neto negativos).
- // OJO: los aprovisionamientos (979.932 €) se imputan a retrocesión por analogía con Pacc y ERSM; el informe no detalla su
- // naturaleza, así que si fueran costes de captación deberían ir a «otros gastos». Amortización 2024 = 0, por eso EBIT = EBITDA.
+ // Los aprovisionamientos (979.932 €) van en su propia fila: el informe no detalla su naturaleza y no hay base para darlos
+ // por retrocesión a colaboradores. Amortización 2024 = 0, por eso EBIT coincide con EBITDA.
  {key:'life5', name:'Life5', empleados:40, ingresos:1813760.80, primas:null,
-   otrosIngresos:1089546.58, retro:979931.96, personal:2280467.24, otros:1898953.05, ebitda:-2256044.87, ebit:-2256044.87, neto:-1676480.45,
-   otrosIngresosPct:1089546.58/1813760.80, retroPct:979931.96/1813760.80, personalPct:2280467.24/1813760.80, otrosPct:1898953.05/1813760.80,
+   otrosIngresos:1089546.58, retro:0, aprov:979931.96, personal:2280467.24, otros:1898953.05, ebitda:-2256044.87, ebit:-2256044.87, neto:-1676480.45,
+   otrosIngresosPct:1089546.58/1813760.80, retroPct:0, aprovPct:979931.96/1813760.80, personalPct:2280467.24/1813760.80, otrosPct:1898953.05/1813760.80,
    ebitdaPct:-1.2438, ebitPct:-1.2438, netoPct:-0.9243,
-   comisEmp:45629.20, costePersEmp:57370.25, primasEmp:null, comPrima:null, retroEff:979931.96/1813760.80, color:'#8c564b'},
+   comisEmp:45629.20, costePersEmp:57370.25, primasEmp:null, comPrima:null, retroEff:0, color:'#8c564b'},
 ];
 
 // ---- informe completo por competidora (eInforma / Registro Mercantil) ----
@@ -1340,6 +1341,106 @@ const DOSSIER={
    'A la vez, la tesorería subió a 3.802.389 € y el patrimonio neto cayó un 42,2%. El fondo de maniobra se vuelve negativo (−572.478 €) y la liquidez baja del 251% al 88%.',
    'Capitaliza desarrollo de producto: 481.608 € de «trabajos realizados por la empresa para su activo» en 2024 y 983.008 € de inmovilizado intangible acumulado. En la comparativa esa cifra va en «otros ingresos», no en comisiones.',
    'Los 572.343 € de activos por impuesto diferido son créditos fiscales por las pérdidas acumuladas; sostienen el resultado vía un impuesto positivo de 184.139 €.']},
+ amv:{
+  razon:'AMV HISPANIA CORREDURÍA DE SEGUROS S.L.',
+  fuente:'eInforma — INFORMA D&B S.A.U. · Balance y Cuenta de Resultados emitido el 18/06/2026 (último dato el 13/06/2026; información contrastada el 03/10/2025). Cuentas anuales individuales del Registro Mercantil (depósito 2024 disponible desde el 07/05/2026), auditadas con opinión favorable.',
+  ficha:[['NIF','B… (no legible en el informe recibido)'],['Número D-U-N-S','462749792'],['Situación','Activa'],['Constitución','21/01 (año no legible en el informe)'],['Domicilio','C/ Anabel Segura (Ed. B) 11, 2º D — 28108 Alcobendas (Madrid)'],['Teléfono','911219324'],['Web','www.amv.es'],['CNAE 2025','6622 — Agentes y corredores de seguros'],['Tamaño (UE)','Empresa mediana'],['Empleados','106 en 2024 (95,3% fijos) · 98 en 2023 · 88 en 2022'],['Capital social','105.300 €'],['Auditoría 2024','Favorable — Rivera-Diánez Auditores S.L.P. (16.003,31 €)']],
+  balance:[
+   ['s','ACTIVO'],
+   ['t','A) ACTIVO NO CORRIENTE',[1305182.47,2062466.72,2123375.71]],
+   ['','I. Inmovilizado intangible (aplicaciones informáticas)',[99221.74,210522.42,300926.40]],
+   ['','II. Inmovilizado material',[237881.13,192252.58,115433.56]],
+   ['','IV. Inversiones en empresas del grupo y asociadas a largo plazo',[968079.60,1615245.72,1615245.72]],
+   ['i','1. Instrumentos de patrimonio',[919633.60,1615245.72,1615245.72]],
+   ['i','5. Otros activos financieros',[48446.00,null,null]],
+   ['','V. Inversiones financieras a largo plazo',[null,44446.00,91770.03]],
+   ['t','B) ACTIVO CORRIENTE',[5539500.79,4841791.15,4342751.82]],
+   ['','III. Deudores comerciales y otras cuentas a cobrar',[382391.05,449392.42,345084.12]],
+   ['i','1. Clientes por ventas y prestaciones de servicios',[245160.48,420892.42,273050.78]],
+   ['i','3. Deudores varios',[1650.00,28500.00,72033.34]],
+   ['i','5. Activos por impuesto corriente',[135580.57,null,null]],
+   ['','IV. Inversiones en empresas del grupo y asociadas a corto plazo',[1650828.02,1377801.35,1985066.21]],
+   ['','VI. Periodificaciones a corto plazo',[59289.61,53782.98,51395.68]],
+   ['','VII. Efectivo y otros activos líquidos equivalentes',[3446992.11,2960814.40,1961205.81]],
+   ['T','TOTAL ACTIVO',[6844683.26,6904257.87,6466127.53]],
+   ['s','PATRIMONIO NETO Y PASIVO'],
+   ['t','A) PATRIMONIO NETO',[4143155.46,3630423.28,2127805.55]],
+   ['i','I. Capital escriturado',[105300.00,105300.00,105300.00]],
+   ['i','II. Prima de emisión',[175324.00,175324.00,175324.00]],
+   ['i','III. Reservas',[3243210.68,1740598.21,1278384.47]],
+   ['i','   · Legal y estatutarias',[21060.00,21060.00,21060.00]],
+   ['i','   · Otras reservas',[3222150.68,1719538.21,1257324.47]],
+   ['i','V. Resultados de ejercicios anteriores (remanente)',[112958.64,112958.64,112958.64]],
+   ['i','VII. Resultado del ejercicio',[506362.14,1496242.43,455838.44]],
+   ['t','B) PASIVO NO CORRIENTE',[1300201.00,1300201.00,2379936.66]],
+   ['','I. Provisiones a largo plazo',[null,null,58300.00]],
+   ['','II. Deudas a largo plazo',[null,null,2000.00]],
+   ['','III. Deudas con empresas del grupo y asociadas a largo plazo',[1300201.00,1300201.00,2319636.66]],
+   ['t','C) PASIVO CORRIENTE',[1401326.80,1973633.59,1958385.32]],
+   ['','III. Deudas a corto plazo (entidades de crédito)',[7218.63,5598.21,8640.18]],
+   ['','IV. Deudas con empresas del grupo y asociadas a corto plazo',[null,null,231782.40]],
+   ['','V. Acreedores comerciales y otras cuentas a pagar',[1394108.17,1968035.38,1717962.74]],
+   ['i','1. Proveedores',[476716.48,475875.41,null]],
+   ['i','3. Acreedores varios',[358802.77,477244.22,1208764.25]],
+   ['i','4. Personal (remuneraciones pendientes de pago)',[392626.68,307644.32,199254.60]],
+   ['i','5. Pasivos por impuesto corriente',[null,407647.77,52427.06]],
+   ['i','6. Otras deudas con las Administraciones Públicas',[165962.24,299623.66,257516.83]],
+   ['T','TOTAL PATRIMONIO NETO Y PASIVO',[6844683.26,6904257.87,6466127.53]]],
+  pyg:[
+   ['','1. Importe neto de la cifra de negocios',[11190062.15,10245598.71,9232799.54]],
+   ['','5. Otros ingresos de explotación',[1571.74,61770.30,7779.77]],
+   ['','6. Gastos de personal',[-4508191.90,-4323190.13,-4415611.28]],
+   ['','7. Otros gastos de explotación',[-4997119.81,-3811351.37,-4011013.10]],
+   ['','8. Amortización del inmovilizado',[-158491.79,-194401.33,-210369.57]],
+   ['t','A) RESULTADO DE EXPLOTACIÓN',[1527830.39,1978426.18,603585.36]],
+   ['','14. Ingresos financieros',[11225.04,10728.57,null]],
+   ['','17. Diferencias de cambio',[-8196.12,-100.62,662.62]],
+   ['','18. Deterioro y rdo. por enajenaciones de instrumentos financieros',[-652299.73,null,null]],
+   ['t','B) RESULTADO FINANCIERO',[-649270.81,10627.95,662.62]],
+   ['t','C) RESULTADO ANTES DE IMPUESTOS',[878559.58,1989054.13,604247.98]],
+   ['','20. Impuestos sobre beneficios',[-372197.44,-492811.70,-148409.54]],
+   ['T','D) RESULTADO DEL EJERCICIO',[506362.14,1496242.43,455838.44]],
+   ['s','MAGNITUDES DERIVADAS'],
+   ['','Margen bruto',[11191633.89,10307369.01,9240579.31]],
+   ['t','EBITDA',[1686322.18,2172827.51,813954.93]],
+   ['t','EBIT',[1527830.39,1978426.18,603585.36]],
+   ['c','Tipo impositivo efectivo (%)',[42.36,24.78,24.56]]],
+  ratios:[
+   ['s','EQUILIBRIO'],
+   ['','Fondo de maniobra',[4138173.99,2868157.56,null],'€'],
+   ['','Ratio fondo de maniobra',[0.60,0.41,null],''],
+   ['','Ratio de solidez',[3.17,1.76,null],''],
+   ['','Periodo medio de cobro',[8,15,11],'días'],
+   ['','Periodo medio de pago',[34,45,0],'días'],
+   ['s','LIQUIDEZ'],
+   ['','Ratio de liquidez',[395.30,245.32,null],'%'],
+   ['','Ratio de liquidez inmediata',[245.98,150.02,null],'%'],
+   ['s','ENDEUDAMIENTO'],
+   ['','Porcentaje de endeudamiento',[19.10,18.91,null],'%'],
+   ['','Cobertura del servicio de la deuda',[2.69,1.31,null],''],
+   ['s','ACTIVIDAD'],
+   ['','Autofinanciación generada por las ventas',[4.34,9.76,null],'%'],
+   ['','Autofinanciación generada por los activos',[7.10,14.48,null],'%'],
+   ['','Punto muerto',[1.16,1.24,null],''],
+   ['','Facturación media por empleado',[105766.18,104312.75,null],'€'],
+   ['','Coste medio por empleado',[42610.51,44015.38,null],'€'],
+   ['','Rotación de activos',[1.64,1.48,1.43],''],
+   ['s','RESULTADOS'],
+   ['','Rentabilidad económica (ROA)',[22.32,28.66,9.34],'%'],
+   ['','Rentabilidad de explotación',[24.64,31.47,null],'%'],
+   ['','Rentabilidad financiera (ROE)',[21.20,54.79,null],'%']],
+  ratiosNota:'La columna de 2022 llegó truncada en el documento recibido (la conversión del PDF se comió los decimales), por eso se deja en blanco salvo los valores enteros y los que constan escritos en los comentarios del propio informe (ROA y rotación de activos de 2022). El balance y la cuenta de resultados de los tres ejercicios sí están completos.',
+  sector:{cnae:'6622 — Actividades de agentes y corredores de seguros',empresas:37,tamano:'10.000.000 – 50.000.000 €',
+   balance:[['Activo no corriente',19.07,37.21],['Activo corriente',80.93,62.79],['Patrimonio neto',60.53,49.94],['Pasivo no corriente',19.00,12.45],['Pasivo corriente',20.47,37.60]],
+   pyg:[['Ventas',99.99,98.55],['Margen bruto',100.00,83.60],['EBITDA',15.07,12.85],['EBIT',13.65,10.77],['Resultado neto',4.52,8.88]]},
+  notas:[
+   'La segunda mayor de la comparativa por facturación (11,19 M€) y la única con cuentas auditadas: opinión favorable de Rivera-Diánez Auditores, 16.003,31 € de honorarios.',
+   'Crecimiento sostenido pero moderado: +11,0% en 2023 y +9,2% en 2024. La plantilla sube en paralelo, de 88 a 106 personas en dos años.',
+   'El resultado neto cae un 66,2% en 2024 (1,50 M€ → 506.362 €) pese a vender más. Dos causas ajenas al negocio ordinario: un deterioro de instrumentos financieros de 652.300 € y un tipo impositivo efectivo del 42,4%, frente al 24,8% del año anterior.',
+   'También se estrecha a nivel operativo: los otros gastos de explotación suben un 31,1% (3,81 M€ → 5,00 M€) mientras el personal solo sube un 4,3%. El margen EBITDA baja del 21,2% al 15,1%.',
+   'Balance sólido y sin banca: patrimonio neto del 60,5% del activo, fondo de maniobra de 4,14 M€, liquidez del 395% y 3,45 M€ de tesorería. La única deuda relevante son 1,30 M€ con empresas del grupo a largo plazo.',
+   'Coste laboral medio de 42.611 €, el más bajo de toda la comparativa, con 105.766 € de facturación por empleado — una cifra que apenas se mueve en tres años (104.739 € en 2022). Crece contratando, no por productividad.',
+   'El resultado de 2024 se destinó íntegramente a reserva voluntaria; no hubo reparto de dividendo.']},
  life5:{
   razon:'YOUR LIFE CORREDURÍA DE SEGUROS S.L.',
   fuente:'eInforma — INFORMA D&B S.A.U. · Balance y Cuenta de Resultados emitido el 29/07/2026 (último dato el 08/07/2026). Cuentas anuales individuales del Registro Mercantil (depósito 2024 disponible desde el 27/02/2026).',
@@ -1633,7 +1734,7 @@ const dosResumen=c=>{
   const row=(l,v,f)=>`<tr><td>${l}</td><td>${v==null?'<span class="dnd">–</span>':f(v)}</td></tr>`;
   return `<div class="dos-scroll"><table class="dos-t"><tr><th>Magnitud (2024)</th><th>Valor</th></tr>`+
    row('Comisiones / ingresos',c.ingresos,eur)+row('Otros ingresos de explotación',c.otrosIngresos,eur)+
-   row('Retrocesión a colaboradores',c.retro,eur)+row('Gastos de personal',c.personal,eur)+
+   row('Retrocesión a colaboradores',c.retro,eur)+row('Aprovisionamientos',c.aprov,eur)+row('Gastos de personal',c.personal,eur)+
    row('Otros gastos de explotación',c.otros,eur)+row('EBITDA',c.ebitda,eur)+row('EBIT',c.ebit,eur)+
    row('Resultado neto',c.neto,eur)+row('Nº de empleados',c.empleados,num0)+
    row('Facturación por empleado',c.comisEmp,eur)+row('Coste medio por empleado',c.costePersEmp,eur)+
@@ -1678,8 +1779,8 @@ function ourMetrics(){
   const otrosSinRetro=(t.esub||0)-(t.colab||0);
   return {key:'you', name:'Tu modelo', color:'#1f3864', year:Y,
     empleados:emp, ingresos:t.itot, primas:t.prim,
-    otrosIngresos:0, retro:t.colab, personal:t.psub, otros:otrosSinRetro, ebitda:t.ebi,
-    otrosIngresosPct:0, retroPct: t.itot? t.colab/t.itot:0, personalPct: t.itot? t.psub/t.itot:0,
+    otrosIngresos:0, retro:t.colab, aprov:0, personal:t.psub, otros:otrosSinRetro, ebitda:t.ebi,
+    otrosIngresosPct:0, retroPct: t.itot? t.colab/t.itot:0, aprovPct:0, personalPct: t.itot? t.psub/t.itot:0,
     otrosPct: t.itot? otrosSinRetro/t.itot:0, ebitdaPct: t.itot? t.ebi/t.itot:0, ebitPct:null, netoPct:null,
     comisEmp: emp? t.itot/emp:0, costePersEmp: emp? t.psub/emp:0, primasEmp: emp? t.prim/emp:0,
     comPrima: t.prim? t.itot/t.prim:0, retroEff: t.itot? t.colab/t.itot:0};
@@ -1688,6 +1789,7 @@ const EXPL={
   ingresos:'Ingresos por comisiones de intermediación de seguros (la «cifra de negocio» de una correduría).',
   otrosIngresosPct:'Otros ingresos de explotación distintos de las comisiones (servicios, gestión…), en % sobre comisiones. Tu modelo no los contempla; en Pacc son altos por su actividad de franquicia.',
   retroPct:'Parte de la comisión que se cede a colaboradores o a la red, en % sobre comisiones. En Pacc (franquicia) es muy alta y figura como «aprovisionamientos» en sus cuentas.',
+  aprovPct:'Aprovisionamientos: el punto 4 de la cuenta de resultados, en % sobre comisiones. En una correduría puede recoger cosas muy distintas —servicios subcontratados, costes de captación, peritaciones, compras— y el depósito de cuentas no lo desglosa. Por eso va en su propia fila, sin dar por supuesto que sea comisión cedida a colaboradores.',
   personalPct:'Gastos de personal (sueldos brutos + Seguridad Social) en % sobre comisiones.',
   otrosPct:'Resto de gastos de explotación (alquiler, tecnología, RC, asesoría…), SIN la retrocesión, en % sobre comisiones.',
   ebitdaPct:'EBITDA = beneficio antes de intereses, impuestos y amortizaciones, en % sobre comisiones. Mide la rentabilidad operativa.',
@@ -1787,6 +1889,7 @@ function renderComp(){
     rowMoney('Comisiones / ingresos','ingresos',null,null,false)+
     rowMoney('(+) Otros ingresos de explotación','otrosIngresos','otrosIngresosPct',null,false)+
     rowMoney('(−) Retrocesión a colaboradores','retro','retroPct',null,false)+
+    rowMoney('(−) Aprovisionamientos','aprov','aprovPct',null,false)+
     rowMoney('(−) Gastos de personal','personal','personalPct','low',false)+
     rowMoney('(−) Otros gastos de explotación','otros','otrosPct','low',false)+
     rowMoney('(=) EBITDA','ebitda','ebitdaPct','high',true)+
