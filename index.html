@@ -1164,6 +1164,12 @@ const BENCH=[
    otrosIngresosPct:118255.94/8490762.17, retroPct:0, personalPct:5575824.60/8490762.17, otrosPct:3038685.33/8490762.17,
    ebitdaPct:-0.0006, ebitPct:-0.0068, netoPct:-0.0239,
    comisEmp:56230.21, costePersEmp:36925.99, primasEmp:null, comPrima:null, retroEff:0, color:'#c00000'},
+ // Weecover (INSURTECH SOLUTIONS CORREDURÍA DE SEGUROS SL, NIF B67414250, Barcelona) — Registro Mercantil / eInforma 2024 (insurtech en fase de inversión: capitaliza desarrollo como «trabajos realizados por la empresa para su activo», que aquí va en otros ingresos; EBITDA, EBIT y neto negativos)
+ {key:'weecover', name:'Weecover', empleados:13, ingresos:1637773.22, primas:null,
+   otrosIngresos:484333.90, retro:0, personal:858754.03, otros:1662876.02, ebitda:-399522.93, ebit:-638938.57, neto:-515069.35,
+   otrosIngresosPct:484333.90/1637773.22, retroPct:0, personalPct:858754.03/1637773.22, otrosPct:1662876.02/1637773.22,
+   ebitdaPct:-0.2439, ebitPct:-0.3901, netoPct:-0.3145,
+   comisEmp:1637773.22/13, costePersEmp:858754.03/13, primasEmp:null, comPrima:null, retroEff:0, color:'#00a0a8'},
 ];
 function ourMetrics(){
   const R=compute(V), Y= YF>0?YF:HY, t=totalCol(R.mon,Y), emp=(t.dir||0)+(t.est||0);
