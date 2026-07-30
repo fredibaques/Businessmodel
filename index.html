@@ -87,16 +87,32 @@
   .topbar select:hover,#chartType:hover,.presetbar select:hover{border-color:#cbd5e1}
 
   /* ===== layout ===== */
-  .wrap{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;padding:20px;width:100%;background:var(--bg);align-items:start}
-  @media(max-width:980px){.wrap{grid-template-columns:1fr}}
+  .wrap{display:block;padding:20px;width:100%;background:var(--bg)}
   .content{min-width:0;display:flex;flex-direction:column;gap:16px;background:transparent}
   /* card */
   .panel{background:var(--card);color:var(--card-foreground);border:1px solid var(--border);
     border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:20px;min-width:0}
   .panel h2{margin:0 0 14px;font-size:15px;font-weight:600;letter-spacing:-.01em;text-transform:none;color:var(--foreground)}
-  .controls{align-self:start;position:sticky;top:74px;max-height:calc(100vh - 96px);overflow:auto;padding:14px}
-  .controls::-webkit-scrollbar{width:8px}
+  /* ===== panel de parámetros (se despliega bajo la topbar) ===== */
+  .ctrlbtn{display:inline-flex;font-size:12.5px;font-weight:500;padding:8px 14px;gap:8px}
+  .ctrlbtn.on{background:var(--accent);border-color:#cbd5e1}
+  .ctrl-chev{font-size:10px;color:var(--muted-foreground);transition:transform .25s ease}
+  .ctrlbtn.on .ctrl-chev{transform:rotate(180deg)}
+  /* truco de grid 0fr → 1fr: anima sin necesidad de saber la altura */
+  #ctrlWrap{display:grid;grid-template-rows:0fr;background:var(--bg);
+    border-bottom:1px solid transparent;transition:grid-template-rows .28s ease,border-color .28s ease}
+  #ctrlWrap.on{grid-template-rows:1fr;border-bottom-color:var(--border)}
+  .ctrl-inner{overflow:hidden;min-height:0}
+  .controls{margin:20px 20px 0;padding:20px;max-height:min(72vh,780px);overflow:auto}
+  .controls::-webkit-scrollbar{width:9px}
   .controls::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px}
+  .controls::-webkit-scrollbar-track{background:transparent}
+  #ctrlWrap:not(.on) .controls{box-shadow:none}
+  /* a lo ancho, los grupos de parámetros se reparten en columnas */
+  #form{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;align-items:start}
+  #form .acc-item{margin-bottom:0}
+  .controls .reset{width:auto;min-width:220px;margin-top:14px}
+  @media(prefers-reduced-motion:reduce){#ctrlWrap{transition:none}}
 
   /* ===== accordion ===== */
   .acc-item{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden;background:var(--card)}
@@ -174,22 +190,22 @@
   .tabpane{display:flex;flex-direction:column;gap:16px;background:transparent}
 
   /* ===== botones ===== */
-  .dlbtn,.xlsbtn,.scenbtn,.pmail,.mail-go,.presetbtns .psave,.ctrlbtn{
+  .dlbtn,.xlsbtn,.scenbtn,.pmail,.mail-go,.presetbtns .psave{
     font-size:12.5px;font-weight:500;padding:8px 16px;border-radius:var(--radius);cursor:pointer;
     border:1px solid transparent;background:var(--primary);color:var(--primary-foreground);
     display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;
     transition:background .15s,box-shadow .15s,opacity .15s}
-  .dlbtn:hover,.scenbtn:hover,.pmail:hover,.mail-go:hover,.presetbtns .psave:hover,.ctrlbtn:hover{background:var(--primary-hover)}
+  .dlbtn:hover,.scenbtn:hover,.pmail:hover,.mail-go:hover,.presetbtns .psave:hover{background:var(--primary-hover)}
   .xlsbtn{background:var(--success);border-color:transparent}
   .xlsbtn:hover{background:#15803d}
   .dlbtn:active,.xlsbtn:active,.scenbtn:active,.pmail:active{transform:translateY(.5px)}
   /* variante outline */
-  .reset,.mail-cancel,.ctrlclose,.presetbtns .pshare,.nreplybox .nreply-btn,.notecard .nact button,.dos-x{
+  .reset,.mail-cancel,.ctrlbtn,.presetbtns .pshare,.nreplybox .nreply-btn,.notecard .nact button,.dos-x{
     font-size:12.5px;font-weight:500;padding:8px 14px;border-radius:var(--radius);cursor:pointer;
     border:1px solid var(--input);background:var(--background);color:var(--foreground);
     display:inline-flex;align-items:center;justify-content:center;gap:6px;
     transition:background .15s,border-color .15s,color .15s}
-  .reset:hover,.mail-cancel:hover,.ctrlclose:hover,.presetbtns .pshare:hover,.nreplybox .nreply-btn:hover,
+  .reset:hover,.mail-cancel:hover,.ctrlbtn:hover,.presetbtns .pshare:hover,.nreplybox .nreply-btn:hover,
   .notecard .nact button:hover,.dos-x:hover{background:var(--accent)}
   .reset{width:100%;margin-top:8px;color:var(--muted-foreground)}
   /* variante destructiva */
@@ -465,8 +481,6 @@
   }
 
   /* ===== cajón de controles en móvil ===== */
-  .ctrlbtn,.ctrlclose{display:none}
-  #ctrlBackdrop{display:none}
   @media(max-width:760px){
     body{font-size:13px}
     .topbar{position:static;gap:8px 10px;padding:10px 12px}
@@ -477,14 +491,10 @@
     .seg button{padding:4px 9px;font-size:11.5px}
     .xlsbtn,.dlbtn{font-size:11.5px;padding:8px 10px;flex:1 1 auto;text-align:center}
     .wrap{padding:12px;gap:12px}
-    .ctrlbtn{display:inline-flex;width:100%;margin-bottom:12px;font-size:13.5px;font-weight:500;padding:11px}
-    .controls{position:fixed;top:0;left:0;height:100%;width:88%;max-width:340px;z-index:60;border-radius:0;
-      transform:translateX(-104%);transition:transform .25s ease;max-height:100%;overflow:auto;
-      box-shadow:var(--shadow-xl)}
-    .controls.show{transform:translateX(0)}
-    .ctrlclose{display:inline-flex;width:100%;margin-bottom:10px;font-size:13px;padding:9px}
-    #ctrlBackdrop{position:fixed;inset:0;background:rgb(15 23 42 / .5);z-index:55;display:none}
-    #ctrlBackdrop.show{display:block}
+    .ctrlbtn{font-size:12px;padding:7px 10px}
+    .controls{margin:12px 12px 0;padding:14px}
+    #form{grid-template-columns:1fr}
+    .controls .reset{width:100%;min-width:0}
     .tabs{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%}
     .tab{flex:0 0 auto;white-space:nowrap;padding:7px 12px;font-size:12.5px}
     .kpis{gap:10px}
@@ -527,6 +537,8 @@
       <button data-g="año" class="on">Año</button>
     </span>
   </div>
+  <button class="ctrlbtn" id="ctrlToggle" aria-expanded="false" aria-controls="ctrlWrap"
+    title="Mostrar u ocultar los parámetros del modelo">⚙ Parámetros del modelo <span class="ctrl-chev">▾</span></button>
   <div class="scen-wrap">
     <button class="scenbtn" id="btnScenarios" aria-expanded="false" title="Escenarios, compartir y exportar">☰ Escenarios y exportar</button>
     <div id="scenPanel" class="scen-panel">
@@ -537,10 +549,9 @@
     </div>
   </div>
 </div>
-<div class="wrap">
-  <div id="ctrlBackdrop"></div>
+<div id="ctrlWrap" aria-hidden="true">
+  <div class="ctrl-inner">
   <div class="panel controls">
-    <button class="ctrlclose" id="ctrlClose">✕ Cerrar</button>
     <div class="presetbar">
       <div class="pl">Escenarios guardados</div>
       <select id="presetSel"><option value="">— Sin escenario —</option></select>
@@ -578,8 +589,10 @@
     <div id="form"></div>
     <button class="reset" id="reset">Restablecer valores</button>
   </div>
+  </div>
+</div>
+<div class="wrap">
   <div class="content">
-    <button class="ctrlbtn" id="ctrlToggle">☰ Parámetros</button>
     <div class="tabs">
       <button class="tab on" data-tab="dash">Dashboard</button>
       <button class="tab" data-tab="pl">Cuenta de resultados (P&amp;L)</button>
@@ -1138,7 +1151,7 @@ function chartImage(type,buckets,gran,W,H){
 // build accordion form
 const form=document.getElementById('form');
 CFG.forEach(([title,cls,items],gi)=>{
-  const item=document.createElement('div'); item.className='acc-item'+(gi===0?'':' collapsed');
+  const item=document.createElement('div'); item.className='acc-item';
   const head=document.createElement('div'); head.className='acc-head '+cls;
   head.innerHTML=`<span>${title}</span><span class="chev">▾</span>`;
   head.onclick=()=>item.classList.toggle('collapsed');
@@ -2565,14 +2578,24 @@ document.getElementById('reset').onclick=()=>{
 };
 window.addEventListener('resize',()=>render());
 
-// cajón de controles en móvil (abrir/cerrar)
+// panel de parámetros: se despliega hacia abajo desde el botón de la topbar
 (function(){
-  const ctrls=document.querySelector('.controls'), bd=document.getElementById('ctrlBackdrop');
-  const open=()=>{ctrls.classList.add('show');bd.classList.add('show');};
-  const close=()=>{ctrls.classList.remove('show');bd.classList.remove('show');};
-  document.getElementById('ctrlToggle').onclick=open;
-  document.getElementById('ctrlClose').onclick=close;
-  bd.onclick=close;
+  const wrap=document.getElementById('ctrlWrap'), btn=document.getElementById('ctrlToggle');
+  const KEY='cbp_ctrl_open';
+  const set=on=>{
+    wrap.classList.toggle('on',on);
+    wrap.setAttribute('aria-hidden',on?'false':'true');
+    btn.setAttribute('aria-expanded',on?'true':'false');
+    btn.classList.toggle('on',on);
+    try{ localStorage.setItem(KEY,on?'1':'0'); }catch(e){}
+  };
+  let ini=false;
+  try{ ini=localStorage.getItem(KEY)==='1'; }catch(e){}
+  set(ini);
+  btn.onclick=()=>set(!wrap.classList.contains('on'));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&wrap.classList.contains('on')&&!document.querySelector('.dos-backdrop.on,.mail-backdrop.on')) set(false);
+  });
 })();
 
 // panel desplegable de escenarios + exportar (arriba a la derecha)
