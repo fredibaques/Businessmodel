@@ -253,14 +253,14 @@
   .cmp-logo{vertical-align:middle;object-fit:contain;max-width:130px}
   .cmp-t th .cmp-logo{max-width:100%}
   .cc-lab img.cmp-logo{max-width:100%}
-  .cmp-bars{display:grid;grid-template-columns:repeat(auto-fit,minmax(720px,1fr));gap:16px}
+  .cmp-bars{display:grid;grid-template-columns:repeat(auto-fit,minmax(920px,1fr));gap:16px}
   @media(max-width:680px){.cmp-bars{grid-template-columns:1fr}}
   .cmp-metric{border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;background:var(--card)}
   .cmp-metric .cmp-h{font-size:12.5px;text-transform:none;letter-spacing:0;color:var(--muted-foreground);
     font-weight:500;margin-bottom:14px}
   .cmp-cols{display:flex;gap:10px;justify-content:space-around;align-items:flex-end;overflow-x:auto;
     -webkit-overflow-scrolling:touch;padding-bottom:2px}
-  .cmp-col{flex:1 0 52px;display:flex;flex-direction:column;align-items:center;min-width:52px}
+  .cmp-col{flex:1 0 66px;display:flex;flex-direction:column;align-items:center;min-width:66px}
   .cc-plot{height:118px;width:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
   .cc-val{font-size:11.5px;font-weight:600;color:var(--foreground);margin-bottom:5px;white-space:nowrap;font-variant-numeric:tabular-nums}
   .cc-bar{width:100%;max-width:50px;border-radius:var(--radius-sm) var(--radius-sm) 0 0;min-height:3px;transition:height .25s ease}
@@ -1401,6 +1401,14 @@ const BENCH=[
    otrosIngresosPct:3835.74/2104446.27, retroPct:0, aprovPct:0, personalPct:1042269.91/2104446.27, otrosPct:500710.64/2104446.27,
    ebitdaPct:0.2686, ebitPct:0.2668, netoPct:0.1967,
    comisEmp:89171.45, costePersEmp:44163.98, primasEmp:null, comPrima:null, retroEff:0, color:'#475569'},
+ // Albrok Mediación SA (NIF A…, Sevilla) — Registro Mercantil / eInforma. OJO: su informe llega hasta 2025, pero la fila
+ // usa 2024 para que la comparativa siga siendo una foto homogénea del mismo ejercicio; los tres años están en su ficha.
+ // Intermediación pura: los aprovisionamientos son el 65,8% de las comisiones y van en su propia fila, no en retrocesión.
+ {key:'albrok', name:'Albrok', empleados:17, ingresos:6360919.63, primas:null,
+   otrosIngresos:21000.00, retro:0, aprov:4185479.56, personal:760917.77, otros:411022.60, ebitda:1024499.70, ebit:1010262.01, neto:759765.37,
+   otrosIngresosPct:21000.00/6360919.63, retroPct:0, aprovPct:4185479.56/6360919.63, personalPct:760917.77/6360919.63, otrosPct:411022.60/6360919.63,
+   ebitdaPct:0.1611, ebitPct:0.1588, netoPct:0.1194,
+   comisEmp:366835.04, costePersEmp:43882.22, primasEmp:null, comPrima:null, retroEff:0, color:'#4338ca'},
 ];
 
 // ---- informe completo por competidora (eInforma / Registro Mercantil) ----
@@ -1508,6 +1516,96 @@ const DOSSIER={
    'A la vez, la tesorería subió a 3.802.389 € y el patrimonio neto cayó un 42,2%. El fondo de maniobra se vuelve negativo (−572.478 €) y la liquidez baja del 251% al 88%.',
    'Capitaliza desarrollo de producto: 481.608 € de «trabajos realizados por la empresa para su activo» en 2024 y 983.008 € de inmovilizado intangible acumulado. En la comparativa esa cifra va en «otros ingresos», no en comisiones.',
    'Los 572.343 € de activos por impuesto diferido son créditos fiscales por las pérdidas acumuladas; sostienen el resultado vía un impuesto positivo de 184.139 €.']},
+ albrok:{
+  razon:'ALBROK MEDIACIÓN S.A.',
+  anios:[2025,2024,2023],
+  fuente:'eInforma — INFORMA D&B S.A.U. · Balance y Cuenta de Resultados emitido el 31/07/2026 (último dato el 25/06/2026; información contrastada el 25/02/2026). Cuentas anuales individuales del Registro Mercantil (depósito 2025 disponible desde el 24/06/2026).',
+  ficha:[['NIF','A… (no legible en el informe recibido)'],['Número D-U-N-S','460412019'],['Situación','Activa'],['Constitución','07/02 (año no legible en el informe)'],['Domicilio','C/ Innovación (Ed. Rentasevilla), s/n — 41020 Sevilla'],['Teléfono','927233430'],['Web','www.albroksa.com'],['CNAE 2025','6622 — Agentes y corredores de seguros'],['Tamaño (UE)','Empresa mediana'],['Empleados','20 en 2025 · 17 en 2024 · 17 en 2023'],['Capital social','88.350 €'],['Ventas','7.289.768 € (2025) · 6.360.920 € (2024) · 5.569.511 € (2023)']],
+  balance:[
+   ['s','ACTIVO'],
+   ['t','A) ACTIVO NO CORRIENTE',[883813.54,634256.82,1489483.94]],
+   ['','I. Inmovilizado intangible',[18955.05,4336.40,1835.19]],
+   ['','II. Inmovilizado material',[196801.42,218839.17,223801.20]],
+   ['','IV. Inversiones en empresas del grupo y asociadas a largo plazo',[null,null,865376.00]],
+   ['','V. Inversiones financieras a largo plazo',[668057.07,411081.25,398471.55]],
+   ['t','B) ACTIVO CORRIENTE',[1086178.48,1236424.52,387147.93]],
+   ['','III. Deudores comerciales (clientes por ventas y prestaciones)',[450360.15,371269.04,267219.58]],
+   ['','V. Inversiones financieras a corto plazo',[135910.84,195577.91,null]],
+   ['','VII. Efectivo y otros activos líquidos equivalentes',[499907.49,669577.57,119928.35]],
+   ['T','TOTAL ACTIVO',[1969992.02,1870681.34,1876631.87]],
+   ['s','PATRIMONIO NETO Y PASIVO'],
+   ['t','A) PATRIMONIO NETO',[1287944.25,1109097.01,950975.80]],
+   ['i','I. Capital escriturado',[88350.00,88350.00,88350.00]],
+   ['i','II. Prima de emisión',[68187.15,68187.15,68187.15]],
+   ['i','III. Reservas',[192794.49,192794.49,182767.61]],
+   ['i','VII. Resultado del ejercicio',[938612.61,759765.37,611671.04]],
+   ['t','B) PASIVO NO CORRIENTE',[136003.41,178788.40,487827.08]],
+   ['','II. Deudas a largo plazo',[136003.41,178788.40,487827.08]],
+   ['i','1. Deudas con entidades de crédito',[136003.41,178788.40,453142.15]],
+   ['i','3. Otras deudas a largo plazo',[null,null,34684.93]],
+   ['t','C) PASIVO CORRIENTE',[546044.36,582795.93,437828.99]],
+   ['','III. Deudas a corto plazo (entidades de crédito)',[105781.11,99505.94,16778.15]],
+   ['','V. Acreedores comerciales y otras cuentas a pagar',[440263.25,483289.99,421050.84]],
+   ['T','TOTAL PATRIMONIO NETO Y PASIVO',[1969992.02,1870681.34,1876631.87]]],
+  pyg:[
+   ['','1. Importe neto de la cifra de negocios',[7289768.01,6360919.63,5569511.44]],
+   ['','4. Aprovisionamientos',[-4687238.42,-4185479.56,null]],
+   ['','5. Otros ingresos de explotación',[7500.00,21000.00,21097.38]],
+   ['','6. Gastos de personal',[-849619.40,-760917.77,-779465.47]],
+   ['','7. Otros gastos de explotación',[-491031.09,-402695.14,-3964210.96]],
+   ['','8. Amortización del inmovilizado',[-25721.86,-14237.69,-16253.52]],
+   ['','11. Deterioro y rdo. por enajenaciones del inmovilizado',[null,null,-4169.22]],
+   ['','13. Otros resultados',[-9437.01,-8327.46,-16479.30]],
+   ['t','A) RESULTADO DE EXPLOTACIÓN',[1234220.23,1010262.01,810030.35]],
+   ['','14. Ingresos financieros',[954.88,608.36,312.51]],
+   ['','15. Gastos financieros',[-9407.87,-15777.31,-24257.48]],
+   ['','16. Variación de valor razonable en instrumentos financieros',[11378.56,19209.19,29476.00]],
+   ['t','B) RESULTADO FINANCIERO',[2925.57,4040.24,5531.03]],
+   ['t','C) RESULTADO ANTES DE IMPUESTOS',[1237145.80,1014302.25,815561.38]],
+   ['','20. Impuestos sobre beneficios',[-298533.19,-254536.88,-203890.34]],
+   ['T','D) RESULTADO DEL EJERCICIO',[938612.61,759765.37,611671.04]],
+   ['s','MAGNITUDES DERIVADAS'],
+   ['','Margen bruto',[2610029.59,2196440.07,5590608.82]],
+   ['t','EBITDA',[1259942.09,1024499.70,826283.87]],
+   ['t','EBIT',[1234220.23,1010262.01,810030.35]]],
+  pygNota:'El margen bruto de 2023 no es comparable con el de 2024 y 2025: ese año no hay aprovisionamientos y los 3,96 M€ equivalentes están dentro de «otros gastos de explotación». La reclasificación posterior hunde el margen bruto del 100,4% al 34,5% sin que el negocio cambie.',
+  ratios:[
+   ['s','EQUILIBRIO'],
+   ['','Fondo de maniobra',[540134.12,653628.59,null],'€'],
+   ['','Ratio fondo de maniobra',[0.27,0.35,null],''],
+   ['','Ratio de solidez',[1.46,1.75,null],''],
+   ['','Periodo medio de cobro',[22,21,17],'días'],
+   ['','Periodo medio de pago',[0,0,0],'días'],
+   ['s','LIQUIDEZ'],
+   ['','Ratio de liquidez',[198.92,212.15,null],'%'],
+   ['','Ratio de liquidez inmediata',[116.44,148.45,null],'%'],
+   ['s','ENDEUDAMIENTO'],
+   ['','Porcentaje de endeudamiento',[12.27,14.88,null],'%'],
+   ['','Coste medio de financiación externa',[0.04,0.06,null],''],
+   ['','Cobertura del servicio de la deuda',[0.25,0.36,null],''],
+   ['','Cobertura de intereses',[131.19,64.03,null],''],
+   ['s','ACTIVIDAD'],
+   ['','Autofinanciación generada por las ventas',[13.23,12.17,null],'%'],
+   ['','Autofinanciación generada por los activos',[48.95,41.38,null],'%'],
+   ['','Punto muerto',[1.20,1.19,null],''],
+   ['','Facturación media por empleado',[382063.31,366835.04,null],'€'],
+   ['','Coste medio por empleado',[44529.32,43882.22,null],'€'],
+   ['','Rotación de activos',[3.70,3.40,2.97],''],
+   ['s','RESULTADOS'],
+   ['','Rentabilidad económica (ROA)',[62.65,54.01,43.16],'%'],
+   ['','Rentabilidad de explotación',[63.96,54.77,null],'%'],
+   ['','Rentabilidad financiera (ROE)',[96.06,91.45,null],'%']],
+  ratiosNota:'La columna de 2023 llegó truncada en el documento recibido (la conversión del PDF se comió los decimales), por eso se deja en blanco salvo los valores enteros y los que constan escritos en los comentarios del propio informe (ROA y rotación de activos de 2023). El balance y la cuenta de resultados de los tres ejercicios sí están completos.',
+  sector:{cnae:'6622 — Actividades de agentes y corredores de seguros',empresas:94,tamano:'2.000.000 – 10.000.000 €',
+   balance:[['Activo no corriente',44.86,34.13],['Activo corriente',55.14,65.87],['Patrimonio neto',65.38,48.10],['Pasivo no corriente',6.90,9.87],['Pasivo corriente',27.72,42.03]],
+   pyg:[['Ventas',99.90,98.55],['Margen bruto',35.77,83.48],['EBITDA',17.27,14.60],['EBIT',16.91,12.85],['Resultado neto',12.86,10.00]]},
+  notas:[
+   'Es la única de la comparativa con las cuentas de 2025 ya depositadas. Su fila en la tabla usa 2024 para que la comparación siga siendo una foto del mismo ejercicio que las demás; aquí puedes ver los tres años.',
+   'Intermediación pura: los aprovisionamientos son el 65,8% de las comisiones en 2024 y el 64,3% en 2025. Es la estructura más externalizada de la comparativa junto con Pacc y ERSM.',
+   'Como consecuencia, el personal pesa solo el 12,0% de las comisiones y la facturación por empleado es de 366.835 € en 2024 y 382.063 € en 2025 — la más alta de toda la comparativa, por delante incluso de Terránea.',
+   'Crece deprisa y rentable: ventas +14,2% en 2024 y +14,6% en 2025, con el EBIT subiendo más rápido todavía (+24,7% y +22,2%). El ROE alcanza el 96,1% en 2025.',
+   'Reparte todo el beneficio: los 938.613 € de 2025 se distribuyeron íntegramente como dividendo. Por eso las reservas llevan tres años congeladas en 192.794 € y el balance no engorda.',
+   'Balance ligerísimo: 1,97 M€ de activo total para 7,29 M€ de facturación — una rotación de activos de 3,7, con diferencia la mayor de la comparativa — y deuda bancaria de apenas 242.000 € entre corto y largo plazo.']},
  prevision:{
   razon:'PREVISIÓN PERSONAL CORREDURÍA DE SEGUROS S.A.',
   fuente:'eInforma — INFORMA D&B S.A.U. · Balance y Cuenta de Resultados emitido el 31/07/2026 (último dato el 09/06/2026; información contrastada el 25/09/2025). Cuentas anuales individuales depositadas en el Registro Mercantil.',
@@ -1973,20 +2071,20 @@ const dosFmt=(v,u)=>{
   const s=v.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d})+(u==='€'?' €':u==='%'?' %':u==='días'?' d':'');
   return v<0? `<span class="neg">${s}</span>` : s;
 };
-const dosRows=(rows,defU)=>rows.map(r=>{
+const dosRows=(rows,defU,YY)=>rows.map(r=>{
   const k=r[0], label=r[1], vals=r[2], u=(r[3]!==undefined?r[3]:defU);
-  if(k==='s') return `<tr class="dos-sec"><td colspan="${DOS_Y.length+1}">${label}</td></tr>`;
+  if(k==='s') return `<tr class="dos-sec"><td colspan="${YY.length+1}">${label}</td></tr>`;
   const cls= k==='T'?' class="dos-tot"' : k==='t'?' class="dos-sub"' : k==='c'?' class="dos-calc"' : '';
   const pad= k==='i'?' style="padding-left:24px"':'';
-  return `<tr${cls}><td${pad}>${label}</td>`+DOS_Y.map((y,j)=>`<td>${dosFmt(vals?vals[j]:null,u)}</td>`).join('')+`</tr>`;
+  return `<tr${cls}><td${pad}>${label}</td>`+YY.map((y,j)=>`<td>${dosFmt(vals?vals[j]:null,u)}</td>`).join('')+`</tr>`;
 }).join('');
-const dosTable=(rows,defU)=>`<div class="dos-scroll"><table class="dos-t"><tr><th></th>${DOS_Y.map(y=>`<th>${y}</th>`).join('')}</tr>${dosRows(rows,defU)}</table></div>`;
+const dosTable=(rows,defU,YY)=>`<div class="dos-scroll"><table class="dos-t"><tr><th></th>${YY.map(y=>`<th>${y}</th>`).join('')}</tr>${dosRows(rows,defU,YY)}</table></div>`;
 const dosSecRow=(l,e,s)=>{ const d=(e==null||s==null)?null:Math.round((e-s)*100)/100;
   return `<tr><td>${l}</td><td>${dosFmt(e,'%')}</td><td>${dosFmt(s,'%')}</td><td>${dosFmt(d,'%')}</td></tr>`; };
-const dosSector=s=>`<div class="dos-scroll"><table class="dos-t">`+
-  `<tr><th>% sobre el total activo</th><th>Empresa 2024</th><th>Sector</th><th>Diferencia</th></tr>`+
+const dosSector=(s,an)=>`<div class="dos-scroll"><table class="dos-t">`+
+  `<tr><th>% sobre el total activo</th><th>Empresa ${an}</th><th>Sector</th><th>Diferencia</th></tr>`+
   s.balance.map(r=>dosSecRow(r[0],r[1],r[2])).join('')+
-  `<tr><th>% sobre ingresos de explotación</th><th>Empresa 2024</th><th>Sector</th><th>Diferencia</th></tr>`+
+  `<tr><th>% sobre ingresos de explotación</th><th>Empresa ${an}</th><th>Sector</th><th>Diferencia</th></tr>`+
   s.pyg.map(r=>dosSecRow(r[0],r[1],r[2])).join('')+`</table></div>`;
 const dosResumen=c=>{
   const row=(l,v,f)=>`<tr><td>${l}</td><td>${v==null?'<span class="dnd">–</span>':f(v)}</td></tr>`;
@@ -2005,17 +2103,19 @@ function openDossier(key){
   document.getElementById('dosName').textContent=c.name;
   document.getElementById('dosRazon').textContent= d? d.razon : 'Cuentas del ejercicio 2024 · Registro Mercantil';
   let h='';
+  const YY = (d&&d.anios) ? d.anios : DOS_Y;
   if(d){
     h+=`<div class="dos-h" style="margin-top:6px">Ficha de la empresa</div><div class="dos-ficha">`+
        d.ficha.map(f=>`<div><span>${f[0]}</span><span>${f[1]}</span></div>`).join('')+`</div>`;
     h+=`<div class="dos-h">Resumen que alimenta la comparativa (2024)</div>`+dosResumen(c);
-    h+=`<div class="dos-h">Balance de situación (€)</div>`+dosTable(d.balance,'€');
+    h+=`<div class="dos-h">Balance de situación (€)</div>`+dosTable(d.balance,'€',YY);
     if(d.balanceNota) h+=`<p class="dos-razon" style="margin:6px 0 0">${d.balanceNota}</p>`;
-    h+=`<div class="dos-h">Cuenta de pérdidas y ganancias (€)</div>`+dosTable(d.pyg,'€');
-    h+=`<div class="dos-h">Ratios principales</div>`+dosTable(d.ratios,'');
+    h+=`<div class="dos-h">Cuenta de pérdidas y ganancias (€)</div>`+dosTable(d.pyg,'€',YY);
+    if(d.pygNota) h+=`<p class="dos-razon" style="margin:6px 0 0">${d.pygNota}</p>`;
+    h+=`<div class="dos-h">Ratios principales</div>`+dosTable(d.ratios,'',YY);
     if(d.ratiosNota) h+=`<p class="dos-razon" style="margin:6px 0 0">${d.ratiosNota}</p>`;
     h+=`<div class="dos-h">Comparativa sectorial — CNAE ${d.sector.cnae}</div>`+
-       `<p class="dos-razon" style="margin:0 0 7px">${num0(d.sector.empresas)} empresas del sector · tramo de facturación ${d.sector.tamano}</p>`+dosSector(d.sector);
+       `<p class="dos-razon" style="margin:0 0 7px">${num0(d.sector.empresas)} empresas del sector · tramo de facturación ${d.sector.tamano}</p>`+dosSector(d.sector,YY[0]);
     h+=`<div class="dos-h">Lectura de las cuentas</div><ul class="dos-notas">`+d.notas.map(n=>`<li>${n}</li>`).join('')+`</ul>`;
     h+=`<p class="dos-fuente"><b>Fuente:</b> ${d.fuente}</p>`;
   } else {
