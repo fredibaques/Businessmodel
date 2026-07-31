@@ -70,10 +70,21 @@
 
   /* ===== topbar ===== */
   .topbar{position:sticky;top:0;z-index:20;background:hsl(0 0% 100% / .85);backdrop-filter:blur(8px);
-    border-bottom:1px solid var(--border);display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:12px 20px}
-  .brand{font-weight:600;color:var(--foreground);font-size:14px;letter-spacing:-.01em;margin-right:auto}
+    border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 20px}
+  .brand{font-weight:600;color:var(--foreground);font-size:14px;letter-spacing:-.01em}
+  /* la navegación principal vive en la topbar; las acciones globales, a la derecha */
+  .topbar-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
+  .topbar .tabs{align-self:center}
+  .topbar .tab{font-size:12.5px;padding:6px 12px}
   .grp2{display:flex;align-items:center;gap:8px}
   .grp2 .lab{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-foreground)}
+  /* ===== barra de filtros (dentro del contenido, justo encima de los paneles) ===== */
+  .filterbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;padding:7px 12px;align-self:flex-start;max-width:100%;
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm)}
+  .filterbar .grp2{gap:6px}
+  .filterbar .lab{font-size:10.5px;letter-spacing:.04em}
+  .filterbar .seg{padding:2px;border-radius:var(--radius-sm)}
+  .filterbar .seg button{padding:3px 9px;font-size:11.5px}
   /* segmented control (estilo tabs de shadcn) */
   .seg{display:inline-flex;background:var(--muted-bg);border:1px solid var(--border);border-radius:var(--radius);padding:3px;gap:2px}
   .seg button{font-size:12px;font-weight:500;padding:4px 11px;border:0;background:transparent;cursor:pointer;
@@ -81,10 +92,11 @@
   .seg button:hover{color:var(--foreground)}
   .seg button.on{background:var(--background);color:var(--foreground);box-shadow:var(--shadow-sm);font-weight:600}
   /* select (input de shadcn) */
-  .topbar select,#chartType,.presetbar select{font-size:12.5px;padding:6px 30px 6px 10px;border:1px solid var(--input);
+  .topbar select,.filterbar select,#chartType,.presetbar select{font-size:12.5px;padding:6px 30px 6px 10px;border:1px solid var(--input);
     border-radius:var(--radius);background:var(--background) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>") no-repeat right 8px center;
     color:var(--foreground);cursor:pointer;appearance:none;-webkit-appearance:none;transition:border-color .15s,box-shadow .15s}
-  .topbar select:hover,#chartType:hover,.presetbar select:hover{border-color:#cbd5e1}
+  .topbar select:hover,.filterbar select:hover,#chartType:hover,.presetbar select:hover{border-color:#cbd5e1}
+  .filterbar select{font-size:12px;padding:5px 27px 5px 9px}
 
   /* ===== layout ===== */
   .wrap{display:block;padding:20px;width:100%;background:var(--bg)}
@@ -488,9 +500,12 @@
     body{font-size:13px}
     .topbar{position:static;gap:8px 10px;padding:10px 12px}
     .brand{flex:1 0 100%;margin-right:0;font-size:13px}
+    .topbar-actions{margin-left:0;flex:1 1 100%;gap:8px}
+    .topbar .tabs{flex:1 1 100%}
     .grp2{gap:5px}
     .grp2 .lab{font-size:10px}
-    .topbar select{font-size:12px;padding:5px 26px 5px 8px}
+    .topbar select,.filterbar select{font-size:12px;padding:5px 26px 5px 8px}
+    .filterbar{padding:8px 10px;gap:8px 12px}
     .seg button{padding:4px 9px;font-size:11.5px}
     .xlsbtn,.dlbtn{font-size:11.5px;padding:8px 10px;flex:1 1 auto;text-align:center}
     .wrap{padding:12px;gap:12px}
@@ -523,31 +538,23 @@
 <body>
 <div class="topbar">
   <div class="brand">Simulador Business Plan — Correduría</div>
-  <div class="grp2"><span class="lab">Horizonte</span>
-    <select id="selHorizon">
-      <option value="3">3 años</option>
-      <option value="5">5 años</option>
-      <option value="10" selected>10 años</option>
-    </select>
+  <div class="tabs">
+    <button class="tab on" data-tab="dash">Dashboard</button>
+    <button class="tab" data-tab="pl">Cuenta de resultados (P&amp;L)</button>
+    <button class="tab" data-tab="ue">Unit economics</button>
+    <button class="tab" data-tab="comp">Comparativa</button>
+    <button class="tab" data-tab="notes">Dudas / Notas <span class="tabbadge" id="notesBadge"></span></button>
   </div>
-  <div class="grp2"><span class="lab">Periodo</span>
-    <select id="selYear"></select>
-  </div>
-  <div class="grp2"><span class="lab">Agrupar por</span>
-    <span class="seg" id="segGran">
-      <button data-g="mes">Mes</button>
-      <button data-g="tri">Trimestre</button>
-      <button data-g="año" class="on">Año</button>
-    </span>
-  </div>
-  <button class="ctrlbtn" id="ctrlToggle" aria-expanded="false" aria-controls="ctrlWrap"
-    title="Mostrar u ocultar los parámetros del modelo">⚙ Parámetros del modelo <span class="ctrl-chev">▾</span></button>
-  <div class="scen-wrap">
-    <button class="scenbtn" id="btnScenarios" aria-expanded="false" title="Escenarios, compartir y exportar">☰ Escenarios y exportar</button>
-    <div id="scenPanel" class="scen-panel">
-      <div class="scen-exports">
-        <button class="xlsbtn" id="xls">⬇ Exportar a Sheets</button>
-        <button class="dlbtn" id="dl">⬇ Descargar PDF</button>
+  <div class="topbar-actions">
+    <button class="ctrlbtn" id="ctrlToggle" aria-expanded="false" aria-controls="ctrlWrap"
+      title="Mostrar u ocultar los parámetros del modelo">⚙ Parámetros del modelo <span class="ctrl-chev">▾</span></button>
+    <div class="scen-wrap">
+      <button class="scenbtn" id="btnScenarios" aria-expanded="false" title="Escenarios, compartir y exportar">☰ Escenarios y exportar</button>
+      <div id="scenPanel" class="scen-panel">
+        <div class="scen-exports">
+          <button class="xlsbtn" id="xls">⬇ Exportar a Sheets</button>
+          <button class="dlbtn" id="dl">⬇ Descargar PDF</button>
+        </div>
       </div>
     </div>
   </div>
@@ -596,12 +603,24 @@
 </div>
 <div class="wrap">
   <div class="content">
-    <div class="tabs">
-      <button class="tab on" data-tab="dash">Dashboard</button>
-      <button class="tab" data-tab="pl">Cuenta de resultados (P&amp;L)</button>
-      <button class="tab" data-tab="ue">Unit economics</button>
-      <button class="tab" data-tab="comp">Comparativa</button>
-      <button class="tab" data-tab="notes">Dudas / Notas <span class="tabbadge" id="notesBadge"></span></button>
+    <div class="filterbar" id="filterbar">
+      <div class="grp2"><span class="lab">Horizonte</span>
+        <select id="selHorizon">
+          <option value="3">3 años</option>
+          <option value="5">5 años</option>
+          <option value="10" selected>10 años</option>
+        </select>
+      </div>
+      <div class="grp2"><span class="lab">Periodo</span>
+        <select id="selYear"></select>
+      </div>
+      <div class="grp2"><span class="lab">Agrupar por</span>
+        <span class="seg" id="segGran">
+          <button data-g="mes">Mes</button>
+          <button data-g="tri">Trimestre</button>
+          <button data-g="año" class="on">Año</button>
+        </span>
+      </div>
     </div>
     <div id="tab-dash" class="tabpane">
       <div class="kpis" id="kpis"></div>
@@ -1235,6 +1254,8 @@ function activateTab(id,doSave){
   document.getElementById('tab-ue').style.display=(id==='ue')?'flex':'none';
   document.getElementById('tab-comp').style.display=(id==='comp')?'flex':'none';
   document.getElementById('tab-notes').style.display=(id==='notes')?'flex':'none';
+  // el cuaderno de dudas no depende de los filtros: allí la barra sobra
+  document.getElementById('filterbar').style.display=(id==='notes')?'none':'flex';
   if(id==='pl'||id==='dash') render();
   if(id==='comp') renderComp();
   if(id==='notes') renderNotes();
