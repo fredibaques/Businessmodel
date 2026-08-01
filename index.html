@@ -318,6 +318,30 @@
   .tag-th-n{font-size:10px;font-weight:400;color:var(--muted-foreground);margin-top:4px;white-space:nowrap}
   .tag-analysis-t th:first-child,.tag-analysis-t td:first-child{width:44%}
   #tagAnalysisPanel .tag-row{justify-content:center;margin-top:0}
+  /* ===== gestión de compañías: listado + ficha ===== */
+  .comp-mgmt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  .comp-card{font-family:inherit;text-align:left;cursor:pointer;border:1px solid var(--border);border-radius:var(--radius-lg);
+    background:var(--card);padding:16px;display:flex;flex-direction:column;gap:12px;transition:box-shadow .15s,border-color .15s}
+  .comp-card:hover{box-shadow:var(--shadow-md);border-color:#cbd5e1}
+  .comp-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:26px}
+  .comp-card-top img{max-height:26px;max-width:140px;object-fit:contain}
+  .comp-card-top img.cmp-logo-dark{background:var(--primary);padding:3px 7px;border-radius:var(--radius-sm)}
+  .comp-card-name{font-size:14px;font-weight:600;color:var(--foreground)}
+  .comp-card-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .comp-card-badge.full{background:var(--success-bg);color:#15803d}
+  .comp-card-badge.partial{background:var(--muted-bg);color:var(--muted-foreground)}
+  .comp-card-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;font-size:12px}
+  .comp-card-stats div{display:flex;flex-direction:column;gap:2px}
+  .comp-card-stats span{color:var(--muted-foreground);font-size:10.5px}
+  .comp-card-stats b{font-size:13px;font-variant-numeric:tabular-nums}
+  .comp-card .tag-row{justify-content:flex-start;margin-top:0;min-height:20px}
+  /* editor de etiquetas inline en la ficha: mismo checklist que el popover, sin flotar */
+  .tag-editor-inline{border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:22px;background:var(--muted-bg)}
+  .tag-editor-inline .tag-pop-list{max-height:none}
+  .tag-editor-inline .tag-pop-item{background:var(--card);border-radius:var(--radius-sm);margin-bottom:4px;padding:7px 8px}
+  .tag-editor-inline .tag-pop-item:hover{background:var(--card)}
+  .tag-editor-inline .tag-pop-del{opacity:1;color:#cbd5e1}
+  .tag-editor-inline .tag-pop-new{border-top:0;padding-top:2px;margin-top:6px}
   /* con diez columnas el reparto fijo por porcentaje hacía que las celdas se solaparan:
      ahora cada columna se ajusta a su contenido y la tabla scrollea si no cabe */
   #compTable{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);
@@ -579,6 +603,8 @@
     <button class="tab" data-tab="pl">Cuenta de resultados (P&amp;L)</button>
     <button class="tab" data-tab="ue">Unit economics</button>
     <button class="tab" data-tab="comp">Comparativa</button>
+    <button class="tab" data-tab="companies">Compañías</button>
+    <button class="tab" data-tab="market">Mercado</button>
     <button class="tab" data-tab="notes">Dudas / Notas <span class="tabbadge" id="notesBadge"></span></button>
   </div>
   <div class="topbar-actions">
@@ -687,6 +713,29 @@
         <p class="note" id="tagAnalysisNote" style="margin-top:0"></p>
         <div id="tagAnalysisBody"></div>
       </div>
+    </div>
+    <div id="tab-companies" class="tabpane" style="display:none">
+      <div class="panel" id="compListPanel">
+        <h2>Compañías de la comparativa</h2>
+        <p class="note" style="margin-top:0">Listado de todas las corredurías con las que te comparas. Pulsa una compañía para abrir su ficha, ver su informe completo y editar sus etiquetas.</p>
+        <div class="comp-mgmt-grid" id="compMgmtList"></div>
+      </div>
+      <div id="compDetailPanel" style="display:none">
+        <button type="button" class="reset" id="compDetailBack" style="width:auto;margin:0 0 14px;padding:8px 16px">← Volver al listado</button>
+        <div class="panel">
+          <div class="dos-head" style="position:static;padding:0 0 16px;margin:0 0 16px;border-radius:0">
+            <div id="compDetLogo"></div>
+            <div><div class="dos-name" id="compDetName"></div><div class="dos-razon" id="compDetRazon"></div></div>
+          </div>
+          <div class="dos-h" style="margin-top:0">Etiquetas</div>
+          <p class="note" style="margin:0 0 10px">Márcalas o crea una nueva. Se aplican al momento y se reflejan en la comparativa y en el análisis por etiquetas.</p>
+          <div id="compDetTags" class="tag-editor-inline"></div>
+          <div id="compDetBody"></div>
+        </div>
+      </div>
+    </div>
+    <div id="tab-market" class="tabpane" style="display:none">
+      <div id="marketBody"></div>
     </div>
     <div id="tab-notes" class="tabpane" style="display:none">
       <div class="panel">
@@ -1309,11 +1358,15 @@ function activateTab(id,doSave){
   document.getElementById('tab-pl').style.display=(id==='pl')?'flex':'none';
   document.getElementById('tab-ue').style.display=(id==='ue')?'flex':'none';
   document.getElementById('tab-comp').style.display=(id==='comp')?'flex':'none';
+  document.getElementById('tab-companies').style.display=(id==='companies')?'flex':'none';
+  document.getElementById('tab-market').style.display=(id==='market')?'flex':'none';
   document.getElementById('tab-notes').style.display=(id==='notes')?'flex':'none';
-  // el cuaderno de dudas no depende de los filtros: allí la barra sobra
-  document.getElementById('filterbar').style.display=(id==='notes')?'none':'flex';
+  // el cuaderno de dudas, la gestión de compañías y el mercado no dependen de los filtros: allí la barra sobra
+  document.getElementById('filterbar').style.display=(id==='notes'||id==='companies'||id==='market')?'none':'flex';
   if(id==='pl'||id==='dash') render();
   if(id==='comp') renderComp();
+  if(id==='companies') renderCompanyList();
+  if(id==='market') renderMarket();
   if(id==='notes') renderNotes();
   ACTIVE_TAB=id; if(doSave!==false) saveState();
 }
@@ -2388,12 +2441,11 @@ const dosResumen=c=>{
    row('Facturación por empleado',c.comisEmp,eur)+row('Coste medio por empleado',c.costePersEmp,eur)+
    row('Primas intermediadas por empleado',c.primasEmp,eur)+row('Margen EBITDA',c.ebitdaPct,pct)+`</table></div>`;
 };
-function openDossier(key){
-  const c=BENCH.find(x=>x.key===key); if(!c) return;
+// cuerpo del informe (ficha, balance, P&L, ratios, sector, lectura y fuente): lo comparten
+// el modal rápido de la comparativa y la ficha de la pestaña Compañías
+function dossierBodyHTML(key){
+  const c=BENCH.find(x=>x.key===key); if(!c) return '';
   const d=DOSSIER[key];
-  document.getElementById('dosLogo').innerHTML= c.logo? `<img class="${c.logoDark?'cmp-logo-dark':''}" src="${c.logo}" alt="${escAttr(c.name)}">` : '';
-  document.getElementById('dosName').innerHTML=escAttr(c.name)+(tagsOf(c.key).length? ` <span class="tag-row" style="display:inline-flex;margin-top:0;vertical-align:middle">${tagsOf(c.key).map(tagChip).join('')}</span>`:'');
-  document.getElementById('dosRazon').textContent= d? d.razon : 'Cuentas del ejercicio 2024 · Registro Mercantil';
   let h='';
   const YY = (d&&d.anios) ? d.anios : DOS_Y;
   if(d){
@@ -2414,9 +2466,70 @@ function openDossier(key){
     h+=`<div class="dos-warn"><b>Informe completo no cargado.</b> De ${escAttr(c.name)} solo tenemos las magnitudes de 2024 que alimentan la comparativa. Para desplegar aquí su balance, la cuenta de resultados de los tres últimos ejercicios, los ratios y la comparativa sectorial, pásame su informe de eInforma y lo incorporo igual que Weecover y Terránea.</div>`;
     h+=`<div class="dos-h">Resumen que alimenta la comparativa (2024)</div>`+dosResumen(c);
   }
-  document.getElementById('dosBody').innerHTML=h;
+  return h;
+}
+function openDossier(key){
+  const c=BENCH.find(x=>x.key===key); if(!c) return;
+  const d=DOSSIER[key];
+  document.getElementById('dosLogo').innerHTML= c.logo? `<img class="${c.logoDark?'cmp-logo-dark':''}" src="${c.logo}" alt="${escAttr(c.name)}">` : '';
+  document.getElementById('dosName').innerHTML=escAttr(c.name)+(tagsOf(c.key).length? ` <span class="tag-row" style="display:inline-flex;margin-top:0;vertical-align:middle">${tagsOf(c.key).map(tagChip).join('')}</span>`:'');
+  document.getElementById('dosRazon').textContent= d? d.razon : 'Cuentas del ejercicio 2024 · Registro Mercantil';
+  document.getElementById('dosBody').innerHTML=dossierBodyHTML(key);
   const bd=document.getElementById('dosBackdrop');
   bd.classList.add('on'); bd.scrollTop=0; document.body.style.overflow='hidden';
+}
+
+// ---- pestaña «Compañías»: listado + ficha editable ----
+let COMP_DETAIL_KEY=null;
+function renderCompanyList(){
+  const box=document.getElementById('compMgmtList'); if(!box) return;
+  const list=[...BENCH].sort((a,b)=>a.name.localeCompare(b.name,'es'));
+  box.innerHTML=list.map(c=>{
+    const has=!!DOSSIER[c.key];
+    const logo= c.logo? `<img class="${c.logoDark?'cmp-logo-dark':''}" src="${c.logo}" alt="${escAttr(c.name)}">` : `<span class="comp-card-name">${escAttr(c.name)}</span>`;
+    const badge= has? `<span class="comp-card-badge full">Informe completo</span>` : `<span class="comp-card-badge partial">Solo resumen</span>`;
+    const tags=tagsOf(c.key).map(tagChip).join('');
+    return `<button type="button" class="comp-card" data-openco="${c.key}">
+      <div class="comp-card-top">${logo}${badge}</div>
+      <div class="comp-card-stats">
+        <div><span>Comisiones 2024</span><b>${eur(c.ingresos)}</b></div>
+        <div><span>Empleados</span><b>${num0(c.empleados)}</b></div>
+        <div><span>Margen EBITDA</span><b class="${c.ebitdaPct<0?'neg':''}">${pct(c.ebitdaPct)}</b></div>
+        <div><span>Coste/empleado</span><b>${c.costePersEmp?eur(c.costePersEmp):'–'}</b></div>
+      </div>
+      <div class="tag-row">${tags||'<span class="cnd" style="font-size:11px">Sin etiquetar</span>'}</div>
+    </button>`;
+  }).join('');
+  box.querySelectorAll('[data-openco]').forEach(btn=>btn.onclick=()=>openCompanyDetail(btn.dataset.openco));
+}
+function renderCompanyDetailTags(){
+  const key=COMP_DETAIL_KEY, box=document.getElementById('compDetTags'); if(!key||!box) return;
+  box.innerHTML=tagChecklistHTML(key);
+  bindTagChecklist(box,key,()=>{ renderCompanyDetailTags(); });
+}
+function openCompanyDetail(key){
+  const c=BENCH.find(x=>x.key===key); if(!c) return;
+  COMP_DETAIL_KEY=key;
+  const d=DOSSIER[key];
+  document.getElementById('compDetLogo').innerHTML= c.logo? `<img class="${c.logoDark?'cmp-logo-dark':''}" src="${c.logo}" alt="${escAttr(c.name)}">` : '';
+  document.getElementById('compDetName').textContent=c.name;
+  document.getElementById('compDetRazon').textContent= d? d.razon : 'Cuentas del ejercicio 2024 · Registro Mercantil';
+  renderCompanyDetailTags();
+  document.getElementById('compDetBody').innerHTML=dossierBodyHTML(key);
+  document.getElementById('compListPanel').style.display='none';
+  document.getElementById('compDetailPanel').style.display='block';
+  window.scrollTo(0,0);
+}
+function closeCompanyDetail(){
+  COMP_DETAIL_KEY=null;
+  document.getElementById('compDetailPanel').style.display='none';
+  document.getElementById('compListPanel').style.display='block';
+  renderCompanyList();
+}
+document.getElementById('compDetailBack').addEventListener('click',closeCompanyDetail);
+function renderMarket(){
+  const box=document.getElementById('marketBody'); if(!box || box.dataset.built) return;
+  box.innerHTML=`<div class="panel"><h2>Mercado</h2><p class="note" style="margin-top:0">En construcción.</p></div>`;
 }
 function closeDossier(){ document.getElementById('dosBackdrop').classList.remove('on'); document.body.style.overflow=''; }
 document.getElementById('dosClose').addEventListener('click',closeDossier);
@@ -2484,6 +2597,30 @@ function deleteTagDef(id){
   Object.keys(TAGS).forEach(k=>{ TAGS[k]=(TAGS[k]||[]).filter(x=>x!==id); if(!TAGS[k].length) delete TAGS[k]; });
   saveTags(TAGS);
 }
+// checklist de etiquetas reutilizable: lo usan tanto el popover rápido de la comparativa
+// como el editor fijo de la ficha de compañía
+function tagChecklistHTML(key){
+  const mine=new Set(tagsOf(key));
+  return `<div class="tag-pop-list">`+(TAGDEFS.length? TAGDEFS.map(t=>`
+      <label class="tag-pop-item">
+        <input type="checkbox" data-tid="${t.id}"${mine.has(t.id)?' checked':''}>
+        <span class="tag-dot" style="background:${t.color}"></span>
+        <span class="tag-pop-label">${escAttr(t.label)}</span>
+        <button type="button" class="tag-pop-del" data-tdel="${t.id}" title="Eliminar esta etiqueta de todas las empresas">🗑</button>
+      </label>`).join('') : `<p class="tag-pop-empty">Aún no hay etiquetas creadas. Escribe una abajo, por ejemplo «Vía colaboradores».</p>`)+
+    `</div>`+
+    `<form class="tag-pop-new" data-tagform><input type="text" class="tag-pop-input" placeholder="Nueva etiqueta…" maxlength="40" autocomplete="off"><button type="submit" class="tag-pop-add" title="Crear y asignar">＋</button></form>`;
+}
+function bindTagChecklist(box,key,onChange){
+  box.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=()=>{ toggleTag(key,cb.dataset.tid); onChange(); });
+  box.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    if(confirm('¿Eliminar esta etiqueta de todas las empresas? No se puede deshacer.')){ deleteTagDef(b.dataset.tdel); onChange(); }
+  });
+  const form=box.querySelector('form[data-tagform]');
+  form.onsubmit=e=>{ e.preventDefault(); const inp=form.querySelector('.tag-pop-input'); const t=createTag(inp.value);
+    if(!t) return; toggleTag(key,t.id); onChange(); const i=box.querySelector('.tag-pop-input'); if(i) i.focus(); };
+}
 function closeTagPopover(){
   const p=document.getElementById('tagPopover'); if(p) p.remove();
   document.removeEventListener('mousedown',tagPopoverOutside,true);
@@ -2492,31 +2629,9 @@ function tagPopoverOutside(e){ const p=document.getElementById('tagPopover'); if
 function openTagPopover(btn,key,name){
   closeTagPopover();
   const pop=document.createElement('div'); pop.id='tagPopover'; pop.className='tag-popover';
-  const mine=new Set(tagsOf(key));
   const paint=()=>{
-    pop.innerHTML=`<div class="tag-pop-h">Etiquetas de ${escAttr(name)}</div>`+
-      `<div class="tag-pop-list">`+(TAGDEFS.length? TAGDEFS.map(t=>`
-        <label class="tag-pop-item">
-          <input type="checkbox" data-tid="${t.id}"${mine.has(t.id)?' checked':''}>
-          <span class="tag-dot" style="background:${t.color}"></span>
-          <span class="tag-pop-label">${escAttr(t.label)}</span>
-          <button type="button" class="tag-pop-del" data-tdel="${t.id}" title="Eliminar esta etiqueta de todas las empresas">🗑</button>
-        </label>`).join('') : `<p class="tag-pop-empty">Aún no hay etiquetas creadas. Escribe una abajo, por ejemplo «Vía colaboradores».</p>`)+
-      `</div>`+
-      `<form class="tag-pop-new" id="tagPopNew"><input type="text" id="tagPopInput" placeholder="Nueva etiqueta…" maxlength="40" autocomplete="off"><button type="submit" class="tag-pop-add" title="Crear y asignar">＋</button></form>`;
-    pop.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=()=>{
-      toggleTag(key,cb.dataset.tid); cb.checked? mine.add(cb.dataset.tid) : mine.delete(cb.dataset.tid);
-      renderComp();
-    });
-    pop.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=e=>{
-      e.stopPropagation();
-      if(confirm('¿Eliminar esta etiqueta de todas las empresas? No se puede deshacer.')){
-        deleteTagDef(b.dataset.tdel); mine.delete(b.dataset.tdel); renderComp(); paint();
-      }
-    });
-    const form=pop.querySelector('#tagPopNew'), input=pop.querySelector('#tagPopInput');
-    form.onsubmit=e=>{ e.preventDefault(); const t=createTag(input.value); if(!t) return;
-      toggleTag(key,t.id); mine.add(t.id); renderComp(); paint(); document.getElementById('tagPopInput').focus(); };
+    pop.innerHTML=`<div class="tag-pop-h">Etiquetas de ${escAttr(name)}</div>`+tagChecklistHTML(key);
+    bindTagChecklist(pop,key,()=>{ renderComp(); paint(); });
   };
   paint();
   document.body.appendChild(pop);
