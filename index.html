@@ -92,10 +92,10 @@
   .seg button:hover{color:var(--foreground)}
   .seg button.on{background:var(--background);color:var(--foreground);box-shadow:var(--shadow-sm);font-weight:600}
   /* select (input de shadcn) */
-  .topbar select,.filterbar select,#chartType,.presetbar select{font-size:12.5px;padding:6px 30px 6px 10px;border:1px solid var(--input);
+  .topbar select,.filterbar select,.presetbar select{font-size:12.5px;padding:6px 30px 6px 10px;border:1px solid var(--input);
     border-radius:var(--radius);background:var(--background) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>") no-repeat right 8px center;
     color:var(--foreground);cursor:pointer;appearance:none;-webkit-appearance:none;transition:border-color .15s,box-shadow .15s}
-  .topbar select:hover,.filterbar select:hover,#chartType:hover,.presetbar select:hover{border-color:#cbd5e1}
+  .topbar select:hover,.filterbar select:hover,.presetbar select:hover{border-color:#cbd5e1}
   .filterbar select{font-size:12px;padding:5px 27px 5px 9px}
 
   /* ===== layout ===== */
@@ -230,6 +230,11 @@
   .chartbox{cursor:crosshair;position:relative;height:340px;width:100%}
   .chartbox canvas{display:block;width:100%;height:100%}
   .chart-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+  /* ===== rejilla de gráficos del dashboard: todos a la vez, sin selector ===== */
+  .charts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .charts-grid>.chart-card:last-child:nth-child(odd){grid-column:1/-1}
+  .chart-card .chartbox{height:250px}
+  @media(max-width:900px){.charts-grid{grid-template-columns:1fr}}
   .legend{display:flex;gap:18px;font-size:12px;margin-top:10px;color:var(--muted-foreground);flex-wrap:wrap}
   .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 
@@ -656,22 +661,8 @@
     <div id="tab-dash" class="tabpane">
       <div class="kpis" id="kpis"></div>
       <div class="be" id="be"></div>
-      <div class="panel">
-        <div class="chart-head">
-          <h2 id="chartTitle">Evolución</h2>
-          <select id="chartType">
-            <option value="res">Ingresos · Gastos · EBITDA</option>
-            <option value="vert">Ingresos por vertical (apilado)</option>
-            <option value="recur">Nueva producción vs Renovaciones</option>
-            <option value="gastos">Composición de gastos (apilado)</option>
-            <option value="cartera">Cartera en vigor</option>
-            <option value="ebac">EBITDA acumulado</option>
-            <option value="margen">Margen EBITDA (%)</option>
-          </select>
-        </div>
-        <div class="chartbox"><canvas id="chart"></canvas></div>
-        <div class="legend" id="legend"></div>
-      </div>
+      <p class="note" id="chartsNote" style="margin:0"></p>
+      <div class="charts-grid" id="dashCharts"></div>
     </div>
     <div id="tab-pl" class="tabpane" style="display:none">
       <div class="panel">
@@ -785,7 +776,6 @@ const CFG = [
 let V = {...DEF};
 let GRAN='año', YF=0;
 let HY=10, HM=120;   // horizonte: años y meses
-let CHARTTYPE='res';
 // calendario de partidas: activar un gasto solo entre ciertos meses (por defecto, todos)
 let PHASE={};  // { clave: {on:bool, from:int, to:int} }   to=0 => hasta el final
 let CMP_SEL=null;  // Set de claves de competidores seleccionados; se inicializa tras definir BENCH
@@ -824,14 +814,13 @@ function syncPhaseControls(){
 
 /* ---- persistencia y escenarios (localStorage) ---- */
 const LS_STATE='cbp_state_v1', LS_PRESETS='cbp_presets_v1';
-function snapshot(){ return {V:{...V}, GRAN, YF, HY, CHARTTYPE, PHASE:JSON.parse(JSON.stringify(PHASE)), CMP_SEL: CMP_SEL?[...CMP_SEL]:null, ACTIVE_TAB}; }
+function snapshot(){ return {V:{...V}, GRAN, YF, HY, PHASE:JSON.parse(JSON.stringify(PHASE)), CMP_SEL: CMP_SEL?[...CMP_SEL]:null, ACTIVE_TAB}; }
 function applySnapshot(s){
   if(!s) return;
   if(s.V) V={...DEF, ...s.V};
   if(s.GRAN) GRAN=s.GRAN;
   if(typeof s.YF==='number') YF=s.YF;
   if(s.HY){ HY=s.HY; HM=HY*12; if(YF>HY) YF=0; }
-  if(s.CHARTTYPE) CHARTTYPE=s.CHARTTYPE;
   if(s.PHASE && typeof s.PHASE==='object') PHASE=s.PHASE;
   if(Array.isArray(s.CMP_SEL)) CMP_SEL=new Set(s.CMP_SEL);
   if(s.ACTIVE_TAB) ACTIVE_TAB=s.ACTIVE_TAB;
@@ -1125,16 +1114,16 @@ function render(){
   document.getElementById('ue').innerHTML=ueHTML(R);
   const buckets=bucketize(R.mon,GRAN,YF);
   const gl={mes:'mes',tri:'trimestre','año':'año'}[GRAN];
-  document.getElementById('chartTitle').textContent=`${CHARTS[CHARTTYPE].title} · ${perLabel} por ${gl}`;
+  document.getElementById('chartsNote').textContent=`Mostrando ${perLabel} por ${gl}.`;
   document.getElementById('tbl').innerHTML=plTable(buckets,tot,{icons:true});
   document.getElementById('note').textContent=`Mostrando ${perLabel} agrupado por ${gl}. Flujo (ingresos, gastos, EBITDA, pólizas nuevas) sumado en el periodo; stock (cartera, EBITDA acumulado, nº gestores) a fin de periodo. El break-even se calcula siempre sobre los ${HM} meses.`;
-  drawChart(buckets);
+  renderChartsGrid(buckets);
   if(document.getElementById('tab-comp').style.display!=='none') renderComp();
   saveState();
 }
 
-function updateLegend(S){
-  document.getElementById('legend').innerHTML=S.map(s=>`<span><i style="background:${s.color}"></i>${s.name}</span>`).join('');
+function legendHTML(S){
+  return S.map(s=>`<span><i style="background:${s.color}"></i>${s.name}</span>`).join('');
 }
 const CPAD={l:64,r:14,t:10,b:26};
 function modeFor(cfg,gran){ return cfg.mode==='auto'?(gran==='mes'?'line':'bars'):cfg.mode; }
@@ -1182,21 +1171,54 @@ function drawCore(x,W,H,cfg,buckets,mode,hover){
   }
   return S;
 }
-let lastBuckets=null,lastHover=null,chartGeo=null;
-function drawChart(buckets,hover){
-  const cfg=CHARTS[CHARTTYPE];
-  const cv=document.getElementById('chart'), dpr=window.devicePixelRatio||1;
+// ---- rejilla de gráficos del dashboard: un canvas independiente por tipo, todos visibles a la vez ----
+const CHART_STATE={}; // key del gráfico → {buckets, hover, geo}
+function chartHitIndexFor(geo,ox){
+  if(!geo) return null;
+  const {W,mode,n}=geo, plotW=W-CPAD.l-CPAD.r;
+  let i = mode==='line' ? (n<=1?0:Math.round((ox-CPAD.l)/plotW*(n-1))) : Math.floor((ox-CPAD.l)/(plotW/n));
+  return Math.max(0,Math.min(n-1,i));
+}
+function drawOneChart(key,buckets,hover){
+  const cv=document.querySelector(`canvas[data-charttype="${key}"]`); if(!cv) return;
+  const cfg=CHARTS[key], dpr=window.devicePixelRatio||1;
   const W=cv.clientWidth, H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr;
   const x=cv.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,W,H);
   const mode=modeFor(cfg,GRAN);
-  updateLegend(drawCore(x,W,H,cfg,buckets,mode,(hover==null?null:hover)));
-  lastBuckets=buckets; lastHover=(hover==null?null:hover); chartGeo={W,mode,n:buckets.length};
+  const S=drawCore(x,W,H,cfg,buckets,mode,hover==null?null:hover);
+  const leg=document.querySelector(`.legend[data-for="${key}"]`); if(leg) leg.innerHTML=legendHTML(S);
+  CHART_STATE[key]={buckets,hover:(hover==null?null:hover),geo:{W,mode,n:buckets.length}};
 }
-function chartHitIndex(ox){
-  if(!chartGeo) return null;
-  const {W,mode,n}=chartGeo, plotW=W-CPAD.l-CPAD.r;
-  let i = mode==='line' ? (n<=1?0:Math.round((ox-CPAD.l)/plotW*(n-1))) : Math.floor((ox-CPAD.l)/(plotW/n));
-  return Math.max(0,Math.min(n-1,i));
+function renderChartsGrid(buckets){
+  const grid=document.getElementById('dashCharts'); if(!grid) return;
+  grid.innerHTML=Object.keys(CHARTS).map(key=>
+    `<div class="panel chart-card"><h2>${CHARTS[key].title}</h2>`+
+    `<div class="chartbox"><canvas data-charttype="${key}"></canvas></div>`+
+    `<div class="legend" data-for="${key}"></div></div>`
+  ).join('');
+  Object.keys(CHARTS).forEach(key=>{
+    drawOneChart(key,buckets,null);
+    const cv=grid.querySelector(`canvas[data-charttype="${key}"]`);
+    cv.addEventListener('mousemove',e=>{
+      const st=CHART_STATE[key]; if(!st) return;
+      const i=chartHitIndexFor(st.geo,e.offsetX); if(i==null) return;
+      if(i!==st.hover) drawOneChart(key,st.buckets,i);
+      const cfg=CHARTS[key], b=st.buckets[i];
+      const vf= cfg.yfmt==='pct'?pct: cfg.yfmt==='num'?num0: eur;
+      let html=`<div class="ct-h">${b.label}</div>`;
+      cfg.series.forEach(s=>{ html+=`<div class="ct-r"><span><i style="background:${s[1]}"></i>${s[0]}</span><b>${vf(s[2](b))}</b></div>`; });
+      chartTip.innerHTML=html; chartTip.style.display='block';
+      let lx=e.clientX+14, ly=e.clientY+14; const w=chartTip.offsetWidth,h=chartTip.offsetHeight;
+      if(lx+w>window.innerWidth-8) lx=e.clientX-14-w;
+      if(ly+h>window.innerHeight-8) ly=window.innerHeight-8-h;
+      if(lx<8)lx=8; if(ly<8)ly=8;
+      chartTip.style.left=lx+'px'; chartTip.style.top=ly+'px';
+    });
+    cv.addEventListener('mouseleave',()=>{
+      chartTip.style.display='none';
+      const st=CHART_STATE[key]; if(st && st.hover!=null) drawOneChart(key,st.buckets,null);
+    });
+  });
 }
 function chartImage(type,buckets,gran,W,H){
   const cv=document.createElement('canvas'), dpr=2;
@@ -1280,8 +1302,6 @@ compEl.addEventListener('mouseover',e=>{const t=e.target.closest('.info'); if(t)
 compEl.addEventListener('mouseout',e=>{if(e.target.closest('.info'))tip.style.display='none';});
 compEl.addEventListener('click',e=>{const t=e.target.closest('.info'); if(t){placeTip(t);
   setTimeout(()=>tip.style.display='none',4000);}});
-
-document.getElementById('chartType').addEventListener('change',e=>{CHARTTYPE=e.target.value;render();});
 
 function activateTab(id,doSave){
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.tab===id));
@@ -2660,27 +2680,8 @@ function renderTagAnalysis(SEL){
     `<div class="cmp-legend">`+groups.map(g=>`<b style="color:${g.tag.color}">${escAttr(g.tag.label)}</b>: ${g.companies.map(c=>escAttr(c.name)).join(', ')}`).join(' &nbsp;·&nbsp; ')+`</div>`;
 }
 
-// tooltip de datos al hacer hover en el gráfico
+// tooltip de datos al hacer hover en cualquiera de los gráficos (usado desde renderChartsGrid)
 const chartTip=document.createElement('div'); chartTip.id='chartTip'; document.body.appendChild(chartTip);
-(function(){
-  const cvEl=document.getElementById('chart');
-  cvEl.addEventListener('mousemove',e=>{
-    if(!lastBuckets) return;
-    const i=chartHitIndex(e.offsetX); if(i==null) return;
-    if(i!==lastHover) drawChart(lastBuckets,i);
-    const cfg=CHARTS[CHARTTYPE], b=lastBuckets[i];
-    const vf= cfg.yfmt==='pct'?pct: cfg.yfmt==='num'?num0: eur;
-    let html=`<div class="ct-h">${b.label}</div>`;
-    cfg.series.forEach(s=>{ html+=`<div class="ct-r"><span><i style="background:${s[1]}"></i>${s[0]}</span><b>${vf(s[2](b))}</b></div>`; });
-    chartTip.innerHTML=html; chartTip.style.display='block';
-    let lx=e.clientX+14, ly=e.clientY+14; const w=chartTip.offsetWidth,h=chartTip.offsetHeight;
-    if(lx+w>window.innerWidth-8) lx=e.clientX-14-w;
-    if(ly+h>window.innerHeight-8) ly=window.innerHeight-8-h;
-    if(lx<8)lx=8; if(ly<8)ly=8;
-    chartTip.style.left=lx+'px'; chartTip.style.top=ly+'px';
-  });
-  cvEl.addEventListener('mouseleave',()=>{ chartTip.style.display='none'; if(lastBuckets){ lastHover=null; drawChart(lastBuckets,null);} });
-})();
 
 function applyVisibility(){
   const tbl=document.getElementById('tbl');
@@ -3067,7 +3068,6 @@ function syncControls(){
   buildYearOptions();
   document.getElementById('selYear').value=String(YF);
   [...document.getElementById('segGran').children].forEach(b=>b.classList.toggle('on',b.dataset.g===GRAN));
-  document.getElementById('chartType').value=CHARTTYPE;
   syncPhaseControls();
   render();
 }
@@ -3161,7 +3161,7 @@ document.getElementById('mailGo').onclick=()=>{
 };
 
 document.getElementById('reset').onclick=()=>{
-  V={...DEF}; GRAN='año'; YF=0; HY=10; HM=120; CHARTTYPE='res';
+  V={...DEF}; GRAN='año'; YF=0; HY=10; HM=120;
   saveState(); location.reload();
 };
 window.addEventListener('resize',()=>render());
@@ -3201,7 +3201,6 @@ window.addEventListener('resize',()=>render());
 // sincroniza topbar con el estado restaurado al iniciar
 document.getElementById('selHorizon').value=String(HY);
 [...document.getElementById('segGran').children].forEach(b=>b.classList.toggle('on',b.dataset.g===GRAN));
-document.getElementById('chartType').value=CHARTTYPE;
 refreshPresetSel('');
 notesBadge();
 render();
