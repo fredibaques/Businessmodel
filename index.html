@@ -270,7 +270,9 @@
   .cc-lab img.cmp-logo{max-width:100%}
   .cmp-bars{display:grid;grid-template-columns:repeat(auto-fit,minmax(920px,1fr));gap:16px}
   @media(max-width:680px){.cmp-bars{grid-template-columns:1fr}}
-  .cmp-metric{border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;background:var(--card)}
+  /* min-width:0 evita que, como ítem de la rejilla, la tarjeta crezca al ancho mínimo del contenido de
+     .cmp-cols (13 competidoras × ancho mínimo) e infle todo el documento en pantallas estrechas */
+  .cmp-metric{border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;background:var(--card);min-width:0}
   .cmp-metric .cmp-h{font-size:12.5px;text-transform:none;letter-spacing:0;color:var(--muted-foreground);
     font-weight:500;margin-bottom:14px}
   .cmp-cols{display:flex;gap:10px;justify-content:space-around;align-items:flex-end;overflow-x:auto;
@@ -282,6 +284,35 @@
   .cc-lab{font-size:11px;color:var(--muted-foreground);margin-top:9px;text-align:center;line-height:1.2;
     min-width:0;max-width:100%;overflow:hidden}
   .cmp-legend{font-size:11.5px;color:var(--muted-foreground);margin-top:10px;line-height:1.55}
+  /* ===== etiquetas manuales de competidoras ===== */
+  .tag-row{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;margin-top:7px}
+  .tag-chip{display:inline-flex;align-items:center;font-size:10px;font-weight:600;line-height:1.7;
+    padding:1px 8px;border-radius:999px;color:#fff;white-space:nowrap}
+  .tag-add{font-family:inherit;font-size:10.5px;line-height:1;padding:3px 7px;border:1px dashed var(--border);
+    background:transparent;color:var(--muted-foreground);border-radius:999px;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .tag-add:hover{border-color:var(--primary);color:var(--primary);background:var(--accent)}
+  .tag-popover{position:fixed;z-index:1300;width:270px;max-width:92vw;background:var(--popover);border:1px solid var(--border);
+    border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);padding:12px;animation:pop .14s ease-out}
+  .tag-pop-h{font-size:12px;font-weight:600;color:var(--foreground);margin-bottom:8px}
+  .tag-pop-list{display:flex;flex-direction:column;gap:1px;max-height:220px;overflow:auto;margin-bottom:9px}
+  .tag-pop-item{display:flex;align-items:center;gap:7px;padding:6px 5px;border-radius:var(--radius-sm);cursor:pointer;font-size:12.5px}
+  .tag-pop-item:hover{background:var(--accent)}
+  .tag-pop-item input{accent-color:var(--primary);width:14px;height:14px;flex:0 0 auto;cursor:pointer}
+  .tag-dot{width:9px;height:9px;border-radius:999px;flex:0 0 auto}
+  .tag-pop-label{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tag-pop-del{flex:0 0 auto;border:0;background:none;color:#cbd5e1;cursor:pointer;font-size:11px;padding:3px;line-height:1;opacity:0;transition:opacity .15s}
+  .tag-pop-item:hover .tag-pop-del{opacity:1}
+  .tag-pop-del:hover{color:var(--destructive)}
+  .tag-pop-empty{font-size:11.5px;color:var(--muted-foreground);margin:2px 0 9px}
+  .tag-pop-new{display:flex;gap:6px;border-top:1px solid var(--border);padding-top:9px}
+  .tag-pop-new input{flex:1;min-width:0;font-size:12px;padding:6px 8px;border:1px solid var(--input);
+    border-radius:var(--radius-sm);background:var(--background);color:var(--foreground)}
+  .tag-pop-add{flex:0 0 auto;width:30px;font-size:15px;font-weight:700;line-height:1;border:1px solid var(--primary);
+    background:var(--primary);color:#fff;border-radius:var(--radius-sm);cursor:pointer}
+  .tag-pop-add:hover{background:var(--primary-hover)}
+  .tag-th-n{font-size:10px;font-weight:400;color:var(--muted-foreground);margin-top:4px;white-space:nowrap}
+  .tag-analysis-t th:first-child,.tag-analysis-t td:first-child{width:44%}
+  #tagAnalysisPanel .tag-row{justify-content:center;margin-top:0}
   /* con diez columnas el reparto fijo por porcentaje hacía que las celdas se solaparan:
      ahora cada columna se ajusta a su contenido y la tabla scrollea si no cabe */
   #compTable{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);
@@ -660,6 +691,11 @@
         <div id="compBars" class="cmp-bars"></div>
       </div>
       <div class="panel"><h2>Comparativa detallada</h2><div id="compTable"></div></div>
+      <div class="panel" id="tagAnalysisPanel">
+        <h2>Análisis por etiquetas</h2>
+        <p class="note" id="tagAnalysisNote" style="margin-top:0"></p>
+        <div id="tagAnalysisBody"></div>
+      </div>
     </div>
     <div id="tab-notes" class="tabpane" style="display:none">
       <div class="panel">
@@ -2336,7 +2372,7 @@ function openDossier(key){
   const c=BENCH.find(x=>x.key===key); if(!c) return;
   const d=DOSSIER[key];
   document.getElementById('dosLogo').innerHTML= c.logo? `<img class="${c.logoDark?'cmp-logo-dark':''}" src="${c.logo}" alt="${escAttr(c.name)}">` : '';
-  document.getElementById('dosName').textContent=c.name;
+  document.getElementById('dosName').innerHTML=escAttr(c.name)+(tagsOf(c.key).length? ` <span class="tag-row" style="display:inline-flex;margin-top:0;vertical-align:middle">${tagsOf(c.key).map(tagChip).join('')}</span>`:'');
   document.getElementById('dosRazon').textContent= d? d.razon : 'Cuentas del ejercicio 2024 · Registro Mercantil';
   let h='';
   const YY = (d&&d.anios) ? d.anios : DOS_Y;
@@ -2399,6 +2435,86 @@ const EXPL={
 const ic=prop=> EXPL[prop]? ` <span class="info" data-tip="${escAttr(EXPL[prop])}">i</span>`:'';
 // selección de competidores con los que compararse (por defecto, todos); puede venir de un escenario guardado
 CMP_SEL = CMP_SEL? new Set([...CMP_SEL].filter(k=>BENCH.some(c=>c.key===k))) : new Set(BENCH.map(c=>c.key));
+
+// ---- etiquetas manuales de competidoras (análisis por grupos, p.ej. «vía colaboradores» vs «captación directa») ----
+const LS_TAGDEFS='cbp_tagdefs_v1', LS_TAGS='cbp_tags_v1';
+const TAG_PALETTE=['#2563eb','#dc2626','#059669','#d97706','#7c3aed','#db2777','#0891b2','#65a30d','#4338ca','#b45309'];
+function loadTagDefs(){ try{ return JSON.parse(localStorage.getItem(LS_TAGDEFS))||[]; }catch(e){ return []; } }
+function saveTagDefs(v){ try{ localStorage.setItem(LS_TAGDEFS, JSON.stringify(v)); }catch(e){} }
+function loadTags(){ try{ return JSON.parse(localStorage.getItem(LS_TAGS))||{}; }catch(e){ return {}; } }
+function saveTags(v){ try{ localStorage.setItem(LS_TAGS, JSON.stringify(v)); }catch(e){} }
+let TAGDEFS=loadTagDefs(), TAGS=loadTags();
+const tagsOf=key=>TAGS[key]||[];
+const tagDef=id=>TAGDEFS.find(t=>t.id===id);
+const tagChip=id=>{ const t=tagDef(id); return t? `<span class="tag-chip" style="background:${t.color}">${escAttr(t.label)}</span>` : ''; };
+function createTag(label){
+  label=(label||'').trim(); if(!label) return null;
+  let t=TAGDEFS.find(x=>x.label.toLowerCase()===label.toLowerCase());
+  if(!t){ t={id:'t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), label, color:TAG_PALETTE[TAGDEFS.length%TAG_PALETTE.length]};
+    TAGDEFS.push(t); saveTagDefs(TAGDEFS); }
+  return t;
+}
+function toggleTag(key,id){
+  const s=new Set(TAGS[key]||[]); s.has(id)? s.delete(id) : s.add(id);
+  if(s.size) TAGS[key]=[...s]; else delete TAGS[key];
+  saveTags(TAGS);
+}
+function deleteTagDef(id){
+  TAGDEFS=TAGDEFS.filter(t=>t.id!==id); saveTagDefs(TAGDEFS);
+  Object.keys(TAGS).forEach(k=>{ TAGS[k]=(TAGS[k]||[]).filter(x=>x!==id); if(!TAGS[k].length) delete TAGS[k]; });
+  saveTags(TAGS);
+}
+function closeTagPopover(){
+  const p=document.getElementById('tagPopover'); if(p) p.remove();
+  document.removeEventListener('mousedown',tagPopoverOutside,true);
+}
+function tagPopoverOutside(e){ const p=document.getElementById('tagPopover'); if(p && !p.contains(e.target)) closeTagPopover(); }
+function openTagPopover(btn,key,name){
+  closeTagPopover();
+  const pop=document.createElement('div'); pop.id='tagPopover'; pop.className='tag-popover';
+  const mine=new Set(tagsOf(key));
+  const paint=()=>{
+    pop.innerHTML=`<div class="tag-pop-h">Etiquetas de ${escAttr(name)}</div>`+
+      `<div class="tag-pop-list">`+(TAGDEFS.length? TAGDEFS.map(t=>`
+        <label class="tag-pop-item">
+          <input type="checkbox" data-tid="${t.id}"${mine.has(t.id)?' checked':''}>
+          <span class="tag-dot" style="background:${t.color}"></span>
+          <span class="tag-pop-label">${escAttr(t.label)}</span>
+          <button type="button" class="tag-pop-del" data-tdel="${t.id}" title="Eliminar esta etiqueta de todas las empresas">🗑</button>
+        </label>`).join('') : `<p class="tag-pop-empty">Aún no hay etiquetas creadas. Escribe una abajo, por ejemplo «Vía colaboradores».</p>`)+
+      `</div>`+
+      `<form class="tag-pop-new" id="tagPopNew"><input type="text" id="tagPopInput" placeholder="Nueva etiqueta…" maxlength="40" autocomplete="off"><button type="submit" class="tag-pop-add" title="Crear y asignar">＋</button></form>`;
+    pop.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=()=>{
+      toggleTag(key,cb.dataset.tid); cb.checked? mine.add(cb.dataset.tid) : mine.delete(cb.dataset.tid);
+      renderComp();
+    });
+    pop.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=e=>{
+      e.stopPropagation();
+      if(confirm('¿Eliminar esta etiqueta de todas las empresas? No se puede deshacer.')){
+        deleteTagDef(b.dataset.tdel); mine.delete(b.dataset.tdel); renderComp(); paint();
+      }
+    });
+    const form=pop.querySelector('#tagPopNew'), input=pop.querySelector('#tagPopInput');
+    form.onsubmit=e=>{ e.preventDefault(); const t=createTag(input.value); if(!t) return;
+      toggleTag(key,t.id); mine.add(t.id); renderComp(); paint(); document.getElementById('tagPopInput').focus(); };
+  };
+  paint();
+  document.body.appendChild(pop);
+  const r=btn.getBoundingClientRect(), pw=270;
+  pop.style.left=Math.max(8,Math.min(r.left,window.innerWidth-pw-8))+'px';
+  pop.style.top=(r.bottom+6)+'px';
+  requestAnimationFrame(()=>{
+    const ph=pop.getBoundingClientRect().height;
+    if(r.bottom+6+ph>window.innerHeight-8) pop.style.top=Math.max(8,r.top-ph-6)+'px';
+  });
+  setTimeout(()=>document.addEventListener('mousedown',tagPopoverOutside,true),0);
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest&&e.target.closest('[data-tagbtn]');
+  if(b){ e.preventDefault(); e.stopPropagation(); const key=b.dataset.tagbtn, c=BENCH.find(x=>x.key===key);
+    openTagPopover(b,key,c?c.name:key); }
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeTagPopover(); });
 function renderCmpSelector(){
   const box=document.getElementById('compSel'); if(!box) return;
   box.innerHTML=`<span class="cmp-sel-lbl">Comparar con:</span>`+
@@ -2447,7 +2563,8 @@ function renderComp(){
     bar('Margen EBITDA',pct,'ebitdaPct');
   const cell=(v,fmt)=> v==null? '<td class="cnd">n/d</td>' : `<td>${fmt(v)}</td>`;
   const eurpct=(c,v)=> v==null? '<td class="cnd">n/d</td>' : `<td>${eur(v)} <span class="cpct">(${pct(c.ingresos? v/c.ingresos:0)})</span></td>`;
-  const head=`<tr><th></th><th>Tu modelo</th>${SEL.map(c=>`<th>${clab(c,24)}</th>`).join('')}</tr>`;
+  const tagRow=c=>`<div class="tag-row">${tagsOf(c.key).map(tagChip).join('')}<button type="button" class="tag-add" data-tagbtn="${c.key}" title="Etiquetar ${escAttr(c.name)}">🏷 etiqueta</button></div>`;
+  const head=`<tr><th></th><th>Tu modelo</th>${SEL.map(c=>`<th>${clab(c,24)}${tagRow(c)}</th>`).join('')}</tr>`;
   const ncol=SEL.length+2;
   const secRow=t=>`<tr class="cmp-sec"><td colspan="${ncol}">${t}</td></tr>`;
   const rowPct=(label,prop,better)=>{
@@ -2505,6 +2622,42 @@ function renderComp(){
     `</table>`+
     `<div class="cmp-legend">Tabla única con tres secciones. <b>Cuenta de resultados</b>: cada celda muestra € al año y, entre paréntesis, su peso en % sobre comisiones (antes estaba partida en dos tablas, % y €; ahora unificada). La retrocesión (lo cedido a colaboradores) va en su propia fila: en modelos de franquicia (p. ej. Pacc) es muy alta y figura en cuentas como «aprovisionamientos» o subcontratación. «Tu modelo» llega solo a EBITDA, por eso EBIT y neto aparecen como n/d. De varias corredurías las cuentas públicas no detallan primas intermediadas ni retrocesión (n/d). Color de «Tu modelo» (gradiente rojo→verde): <b style="color:#b00020">rojo</b> = negativo · transparente = positivo pero peor que la media · <b style="color:#2e7d32">verde</b> = positivo y mejor que la media de las seleccionadas.</div>`;
 
+  renderTagAnalysis(SEL);
+}
+// ---- análisis agregado por etiqueta: media de márgenes y costes de cada grupo etiquetado ----
+function renderTagAnalysis(SEL){
+  const note=document.getElementById('tagAnalysisNote'), body=document.getElementById('tagAnalysisBody');
+  if(!note||!body) return;
+  const used=TAGDEFS.filter(t=>SEL.some(c=>tagsOf(c.key).includes(t.id)));
+  if(!used.length){
+    note.innerHTML='Aún no has etiquetado ninguna competidora. Pulsa <b>🏷 etiqueta</b> bajo el nombre de cualquier empresa, en la tabla de abajo, para crear etiquetas propias — por ejemplo «Vía colaboradores» y «Captación directa» — y comparar aquí sus márgenes, costes y estructura de gastos por grupo.';
+    body.innerHTML=''; return;
+  }
+  const sinEtiqueta=SEL.filter(c=>!tagsOf(c.key).length);
+  const groups=used.map(t=>({tag:t,companies:SEL.filter(c=>tagsOf(c.key).includes(t.id))}));
+  if(sinEtiqueta.length) groups.push({tag:{id:'__none',label:'Sin etiquetar',color:'#94a3b8'},companies:sinEtiqueta});
+  note.innerHTML=`Media de las competidoras que llevan cada etiqueta, entre las <b>${SEL.length}</b> seleccionadas arriba en «Comparar con». Una misma empresa puede llevar varias etiquetas a la vez, así que los grupos pueden solaparse.`;
+  const avg=(arr,f)=>{ const v=arr.map(f).filter(x=>x!=null); return v.length? v.reduce((a,b)=>a+b,0)/v.length : null; };
+  const rows=[
+    ['Nº de empresas',g=>g.companies.length,num0],
+    ['Comisiones medias',g=>avg(g.companies,c=>c.ingresos),eur],
+    ['% Personal s/ comisiones',g=>avg(g.companies,c=>c.personalPct),pct],
+    ['% Otros gastos s/ comisiones',g=>avg(g.companies,c=>c.otrosPct),pct],
+    ['% Aprovisionamientos s/ comisiones',g=>avg(g.companies,c=>c.aprovPct),pct],
+    ['% Retrocesión s/ comisiones',g=>avg(g.companies,c=>c.retroPct),pct],
+    ['Margen EBITDA',g=>avg(g.companies,c=>c.ebitdaPct),pct],
+    ['Margen EBIT',g=>avg(g.companies,c=>c.ebitPct),pct],
+    ['Margen neto',g=>avg(g.companies,c=>c.netoPct),pct],
+    ['Facturación por empleado',g=>avg(g.companies,c=>c.comisEmp),eur],
+    ['Coste medio por empleado',g=>avg(g.companies,c=>c.costePersEmp),eur],
+  ];
+  const headCell=g=>`<th><span class="tag-chip" style="background:${g.tag.color}">${escAttr(g.tag.label)}</span><div class="tag-th-n">${g.companies.length} ${g.companies.length===1?'empresa':'empresas'}</div></th>`;
+  const bodyRows=rows.map(([label,get,fmt])=>{
+    const vals=groups.map(get);
+    return `<tr><td>${label}</td>`+vals.map(v=>`<td>${v==null?'<span class="dnd">–</span>':fmt(v)}</td>`).join('')+`</tr>`;
+  }).join('');
+  body.innerHTML=`<div class="dos-scroll"><table class="dos-t tag-analysis-t"><tr><th></th>${groups.map(headCell).join('')}</tr>${bodyRows}</table></div>`+
+    `<div class="cmp-legend">`+groups.map(g=>`<b style="color:${g.tag.color}">${escAttr(g.tag.label)}</b>: ${g.companies.map(c=>escAttr(c.name)).join(', ')}`).join(' &nbsp;·&nbsp; ')+`</div>`;
 }
 
 // tooltip de datos al hacer hover en el gráfico
