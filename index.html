@@ -342,6 +342,30 @@
   .tag-editor-inline .tag-pop-item:hover{background:var(--card)}
   .tag-editor-inline .tag-pop-del{opacity:1;color:#cbd5e1}
   .tag-editor-inline .tag-pop-new{border-top:0;padding-top:2px;margin-top:6px}
+  /* ===== página de Mercado ===== */
+  .mkt-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+  .mkt-insight{padding:12px 14px;border-radius:var(--radius);border:1px dashed var(--border);background:var(--muted-bg);font-size:12.5px;line-height:1.6}
+  .mkt-insight b{color:var(--foreground)}
+  .mkt-bars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  @media(max-width:900px){.mkt-bars{grid-template-columns:1fr}}
+  .mkt-hbar-list{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+  .mkt-hbar-row{display:grid;grid-template-columns:172px 1fr 50px;align-items:center;gap:8px;font-size:12px}
+  .mkt-hbar-row .mkt-hbar-lab{color:var(--foreground);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mkt-hbar-track{background:var(--muted-bg);border-radius:999px;height:16px;overflow:hidden}
+  .mkt-hbar-fill{height:100%;border-radius:999px;transition:width .3s ease}
+  .mkt-hbar-row .mkt-hbar-val{font-weight:600;font-variant-numeric:tabular-nums}
+  .mkt-split{margin:14px 0}
+  .mkt-split-lab{font-size:12.5px;font-weight:600;color:var(--foreground);margin-bottom:6px}
+  .mkt-split-bar{display:flex;height:30px;border-radius:var(--radius-sm);overflow:hidden;box-shadow:inset 0 0 0 1px var(--border)}
+  .mkt-split-seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;white-space:nowrap;transition:width .3s ease}
+  .mkt-split-legend{display:flex;gap:16px;margin-top:8px;font-size:11.5px;color:var(--muted-foreground)}
+  .mkt-split-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  .mkt-vbars{display:flex;align-items:flex-end;justify-content:space-around;gap:8px;height:190px;margin-top:6px;padding:0 4px}
+  .mkt-vbar-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;flex:1;min-width:0}
+  .mkt-vbar-val{font-size:10.5px;font-weight:600;color:var(--foreground);margin-bottom:4px;white-space:nowrap}
+  .mkt-vbar-fill{width:100%;max-width:38px;border-radius:4px 4px 0 0;min-height:2px}
+  .mkt-vbar-lab{font-size:10.5px;color:var(--muted-foreground);margin-top:6px}
+  .mkt-fuente{font-size:11px;color:var(--muted-foreground);line-height:1.6;margin-top:6px;border-top:1px solid var(--border);padding-top:10px}
   /* con diez columnas el reparto fijo por porcentaje hacía que las celdas se solaparan:
      ahora cada columna se ajusta a su contenido y la tabla scrollea si no cabe */
   #compTable{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);
@@ -2527,9 +2551,109 @@ function closeCompanyDetail(){
   renderCompanyList();
 }
 document.getElementById('compDetailBack').addEventListener('click',closeCompanyDetail);
+// ---- página «Mercado»: sector de mediación de seguros (DGSFP, informe estadístico anual 2023) ----
+const meur=v=>(v/1e6).toLocaleString('es-ES',{maximumFractionDigits:0})+' M€';
+const MKT_EVOL=[[2016,3254],[2017,3276],[2018,3378],[2019,3460],[2020,3539],[2021,3655],[2022,3713],[2023,3695],[2024,3719]];
+// distribución de la cartera de corredores de seguros por ramo · No Vida 2023 (% sobre primas totales del ramo)
+const MKT_RAMOS=[
+ ['Autos',22.76,12.20],
+ ['Multirriesgo industriales',13.82,8.28],
+ ['RC general',13.71,12.59],
+ ['Asistencia sanitaria',11.13,9.13],
+ ['Incendios',4.67,8.69],
+ ['Transportes',4.25,13.35],
+ ['Multirriesgo hogar',3.89,24.78],
+ ['Enfermedad',3.01,10.94],
+ ['Resto de ramos',22.76,null],
+];
+function mktHBars(rows,idx,fmt,color,max){
+  max=max||Math.max(...rows.map(r=>r[idx]));
+  return `<div class="mkt-hbar-list">`+rows.map(r=>{
+    const v=r[idx];
+    if(v==null) return `<div class="mkt-hbar-row"><span class="mkt-hbar-lab">${escAttr(r[0])}</span><div class="mkt-hbar-track"></div><span class="mkt-hbar-val cnd">n/d</span></div>`;
+    const w=Math.max(2,(v/max)*100);
+    return `<div class="mkt-hbar-row"><span class="mkt-hbar-lab">${escAttr(r[0])}</span>`+
+      `<div class="mkt-hbar-track"><div class="mkt-hbar-fill" style="width:${w}%;background:${color}"></div></div>`+
+      `<span class="mkt-hbar-val">${fmt(v)}</span></div>`;
+  }).join('')+`</div>`;
+}
+function mktVBars(rows,color){
+  const max=Math.max(...rows.map(r=>r[1]));
+  return `<div class="mkt-vbars">`+rows.map(([label,v])=>{
+    const h=Math.max(3,(v/max)*100);
+    return `<div class="mkt-vbar-col"><div class="mkt-vbar-val">${num0(v)}</div><div class="mkt-vbar-fill" style="height:${h}%;background:${color}"></div><div class="mkt-vbar-lab">${label}</div></div>`;
+  }).join('')+`</div>`;
+}
+function mktSplit(label,a,b,nameA,nameB,colorA,colorB){
+  return `<div class="mkt-split"><div class="mkt-split-lab">${label}</div>`+
+    `<div class="mkt-split-bar">`+
+    `<div class="mkt-split-seg" style="width:${a}%;background:${colorA}">${pct(a/100)}</div>`+
+    `<div class="mkt-split-seg" style="width:${b}%;background:${colorB}">${pct(b/100)}</div>`+
+    `</div></div>`;
+}
 function renderMarket(){
   const box=document.getElementById('marketBody'); if(!box || box.dataset.built) return;
-  box.innerHTML=`<div class="panel"><h2>Mercado</h2><p class="note" style="margin-top:0">En construcción.</p></div>`;
+  box.dataset.built='1';
+  const cA='#1f3864', cB='#c55a11'; // corredores (identidad de la app) vs canal agencial/bancaseguros
+  box.innerHTML=`
+    <div class="panel">
+      <h2>El sector de la mediación de seguros en España</h2>
+      <p class="note" style="margin-top:0">Cifras del <b>Informe estadístico anual de mediación 2023</b> (Dirección General de Seguros y Fondos de Pensiones), sobre la actividad de corredores de seguros, agentes vinculados y operadores de banca-seguros. El registro está actualizado a 04/11/2024; la actividad intermediada corresponde al ejercicio 2023.</p>
+      <div class="mkt-kpis">
+        <div class="kpi"><div class="k">Corredores inscritos</div><div class="v">3.719</div><div class="s">+0,65% vs 2023 · 992 físicas + 2.727 sociedades</div></div>
+        <div class="kpi"><div class="k">Volumen intermediado 2023</div><div class="v">16.940 M€</div><div class="s">13.831 M€ No Vida + 3.109 M€ Vida</div></div>
+        <div class="kpi"><div class="k">Comisión media No Vida</div><div class="v">12,5%</div><div class="s">sobre las primas intermediadas</div></div>
+        <div class="kpi"><div class="k">Nueva producción No Vida</div><div class="v">23,2%</div><div class="s">de la cartera total — proxy de crecimiento</div></div>
+      </div>
+      <div class="mkt-insight" style="margin-top:16px">Los corredores de seguros son solo el <b>6,4%</b> de los 58.005 mediadores inscritos en el registro de la DGSFP (frente a 53.812 agentes exclusivos y 350 agentes vinculados) — pero intermedian la <b>mayoría del negocio No Vida</b>. Es un canal minoritario en número, dominante en volumen para los ramos que no son de vida.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Evolución del colectivo de corredores (2016–2024)</h2>
+      <p class="note" style="margin-top:0">Personas físicas + sociedades de correduría inscritas en el Registro de la DGSFP. Crecimiento sostenido y prácticamente ininterrumpido en la última década.</p>
+      ${mktVBars(MKT_EVOL,cA)}
+    </div>
+
+    <div class="panel">
+      <h2>Corredores frente al canal agencial y de bancaseguros</h2>
+      <p class="note" style="margin-top:0">Reparto del volumen total de primas intermediadas en 2023 entre corredores de seguros y el conjunto de agentes vinculados + operadores de banca-seguros (vinculados y exclusivos).</p>
+      ${mktSplit('No Vida — 21.480 M€ intermediados',64.4,35.6,'Corredores','Agentes y bancaseguros',cA,cB)}
+      ${mktSplit('Vida — 28.610 M€ intermediados',10.9,89.1,'Corredores','Agentes y bancaseguros',cA,cB)}
+      <div class="mkt-split-legend"><span><i style="background:${cA}"></i>Corredores de seguros</span><span><i style="background:${cB}"></i>Agentes vinculados + banca-seguros</span></div>
+      <div class="mkt-insight" style="margin-top:14px">La foto se invierte por completo entre ramos. En <b>No Vida los corredores son mayoría</b> (64,4%): es el terreno propio de la correduría independiente. En <b>Vida domina la bancaseguros</b> (89,1% entre agentes y bancos): los corredores apenas intermedian el 10,9% de un mercado, además, mucho mayor (28.610 M€ frente a 21.480 M€ en No Vida). El canal agencial/bancaseguros también cobra más comisión relativa en No Vida (18,3% de media, frente al 12,5% de los corredores).</div>
+    </div>
+
+    <div class="mkt-bars">
+      <div class="panel">
+        <h2>Dónde está el negocio: cartera por ramo</h2>
+        <p class="note" style="margin-top:0">% sobre el total de primas No Vida intermediadas por corredores en 2023. Autos concentra por sí solo casi una cuarta parte.</p>
+        ${mktHBars(MKT_RAMOS,1,v=>pct(v/100),cA,25)}
+      </div>
+      <div class="panel">
+        <h2>Qué ramos pagan mejor comisión</h2>
+        <p class="note" style="margin-top:0">Comisión media sobre la prima, mismos ramos que a la izquierda. El orden cambia por completo.</p>
+        ${mktHBars(MKT_RAMOS,2,v=>pct(v/100),'#1f9d57',25)}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="mkt-insight">Autos mueve el <b>22,8%</b> del negocio pero solo paga un <b>12,2%</b> de comisión — de los ramos peor pagados. En el otro extremo, multirriesgo hogar pesa poco en volumen (3,9%) pero paga casi el doble (24,8%). Una cartera concentrada en autos factura mucho pero a margen bajo; diversificar hacia hogar, decesos o asistencia mejora la comisión media aunque venda menos primas.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Corredores: personas físicas, sociedades y reaseguros</h2>
+      <p class="note" style="margin-top:0">Volumen total de negocio No Vida 2023, por tipo de corredor.</p>
+      <div class="dos-scroll"><table class="dos-t">
+        <tr><th></th><th>Primas intermediadas</th><th>Comisión media</th></tr>
+        <tr><td>Corredores persona física</td><td>${meur(316660578.39)}</td><td>${pct(0.1499)}</td></tr>
+        <tr><td>Sociedades de correduría</td><td>${meur(11800806224.77)}</td><td>${pct(0.1333)}</td></tr>
+        <tr><td>Corredores de reaseguros</td><td>${meur(1713888759.93)}</td><td>${pct(0.0630)}</td></tr>
+      </table></div>
+      <p class="dos-razon" style="margin-top:8px">Las sociedades de correduría mueven 37 veces más volumen que los corredores persona física, y cobran algo menos por ello. Los corredores de reaseguros —que intermedian entre aseguradoras, no con el cliente final— trabajan con una comisión mucho más ajustada (6,3%), propia de un negocio mayorista.</p>
+    </div>
+
+    <div class="panel">
+      <p class="mkt-fuente"><b>Fuente:</b> Informe estadístico anual de mediación 2023, Dirección General de Seguros y Fondos de Pensiones (DGSFP). Datos registrales a 04/11/2024; actividad de mediación del ejercicio 2023 remitida antes del 30/04/2024. Cifras de «volumen total de negocio» = primas devengadas intermediadas netas de anulaciones en vigor durante 2023, incluida la nueva producción.</p>
+    </div>`;
 }
 function closeDossier(){ document.getElementById('dosBackdrop').classList.remove('on'); document.body.style.overflow=''; }
 document.getElementById('dosClose').addEventListener('click',closeDossier);
