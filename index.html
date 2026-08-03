@@ -2404,20 +2404,21 @@ function closeCompanyDetail(){
   renderCompanyList();
 }
 document.getElementById('compDetailBack').addEventListener('click',closeCompanyDetail);
-// ---- página «Mercado»: sector de mediación de seguros (DGSFP, informe estadístico anual 2023) ----
+// ---- página «Mercado»: sector de mediación de seguros (DGSFP, informe estadístico anual 2024) ----
 const meur=v=>(v/1e6).toLocaleString('es-ES',{maximumFractionDigits:0})+' M€';
-const MKT_EVOL=[[2016,3254],[2017,3276],[2018,3378],[2019,3460],[2020,3539],[2021,3655],[2022,3713],[2023,3695],[2024,3719]];
-// distribución de la cartera de corredores de seguros por ramo · No Vida 2023 (% sobre primas totales del ramo)
+// evolución del registro DGSFP; 2025 es una foto provisional a 21/11/2025 (año en curso, no cierre)
+const MKT_EVOL=[[2016,3254],[2017,3276],[2018,3378],[2019,3460],[2020,3539],[2021,3655],[2022,3713],[2023,3721],[2024,3688],['2025*',3445]];
+// distribución de la cartera de corredores de seguros por ramo · No Vida 2024 (% sobre primas totales del ramo, corredores física+jurídica+reaseguros)
 const MKT_RAMOS=[
- ['Autos',22.76,12.20],
- ['Multirriesgo industriales',13.82,8.28],
- ['RC general',13.71,12.59],
- ['Asistencia sanitaria',11.13,9.13],
- ['Incendios',4.67,8.69],
- ['Transportes',4.25,13.35],
- ['Multirriesgo hogar',3.89,24.78],
- ['Enfermedad',3.01,10.94],
- ['Resto de ramos',22.76,null],
+ ['Autos particulares',19.10,13.33],
+ ['Asistencia sanitaria',13.14,10.10],
+ ['Multirriesgo industriales',7.37,14.91],
+ ['RC general',6.66,15.31],
+ ['Autos flotas',5.53,8.65],
+ ['Otros multirriesgos',5.05,6.40],
+ ['Incendios',4.89,7.82],
+ ['Transportes',4.42,12.62],
+ ['Resto de ramos',33.83,null],
 ];
 function mktHBars(rows,idx,fmt,color,max){
   max=max||Math.max(...rows.map(r=>r[idx]));
@@ -2451,35 +2452,35 @@ function renderMarket(){
   box.innerHTML=`
     <div class="panel">
       <h2>El sector de la mediación de seguros en España</h2>
-      <p class="note" style="margin-top:0">Cifras del <b>Informe estadístico anual de mediación 2023</b> (Dirección General de Seguros y Fondos de Pensiones), sobre la actividad de corredores de seguros, agentes vinculados y operadores de banca-seguros. El registro está actualizado a 04/11/2024; la actividad intermediada corresponde al ejercicio 2023.</p>
+      <p class="note" style="margin-top:0">Cifras del <b>Informe estadístico anual de mediación 2024</b> (Dirección General de Seguros y Fondos de Pensiones), sobre la actividad de corredores de seguros, agentes vinculados y operadores de banca-seguros. El registro está actualizado a 21/11/2025; la actividad intermediada corresponde al ejercicio 2024.</p>
       <div class="mkt-kpis">
-        <div class="kpi"><div class="k">Corredores inscritos</div><div class="v">3.719</div><div class="s">+0,65% vs 2023 · 992 físicas + 2.727 sociedades</div></div>
-        <div class="kpi"><div class="k">Volumen intermediado 2023</div><div class="v">16.940 M€</div><div class="s">13.831 M€ No Vida + 3.109 M€ Vida</div></div>
-        <div class="kpi"><div class="k">Comisión media No Vida</div><div class="v">12,5%</div><div class="s">sobre las primas intermediadas</div></div>
-        <div class="kpi"><div class="k">Nueva producción No Vida</div><div class="v">23,2%</div><div class="s">de la cartera total — proxy de crecimiento</div></div>
+        <div class="kpi"><div class="k">Corredores inscritos</div><div class="v">3.445</div><div class="s">-6,59% vs cierre 2024 · 884 físicas + 2.561 sociedades</div></div>
+        <div class="kpi"><div class="k">Volumen intermediado 2024</div><div class="v">17.206 M€</div><div class="s">14.323 M€ No Vida + 2.883 M€ Vida</div></div>
+        <div class="kpi"><div class="k">Comisión media No Vida</div><div class="v">13,2%</div><div class="s">sobre las primas intermediadas</div></div>
+        <div class="kpi"><div class="k">Nueva producción No Vida</div><div class="v">25,7%</div><div class="s">de la cartera total — proxy de crecimiento</div></div>
       </div>
-      <div class="mkt-insight" style="margin-top:16px">Los corredores de seguros son solo el <b>6,4%</b> de los 58.005 mediadores inscritos en el registro de la DGSFP (frente a 53.812 agentes exclusivos y 350 agentes vinculados) — pero intermedian la <b>mayoría del negocio No Vida</b>. Es un canal minoritario en número, dominante en volumen para los ramos que no son de vida.</div>
+      <div class="mkt-insight" style="margin-top:16px">Los corredores de seguros son solo el <b>6,4%</b> de los 54.054 mediadores inscritos en el registro de la DGSFP a 21/11/2025 (frente a 50.241 agentes exclusivos y 361 agentes vinculados) — pero intermedian la <b>mayoría del negocio No Vida</b>. Es un canal minoritario en número, dominante en volumen para los ramos que no son de vida.</div>
     </div>
 
     <div class="panel">
-      <h2>Evolución del colectivo de corredores (2016–2024)</h2>
-      <p class="note" style="margin-top:0">Personas físicas + sociedades de correduría inscritas en el Registro de la DGSFP. Crecimiento sostenido y prácticamente ininterrumpido en la última década.</p>
+      <h2>Evolución del colectivo de corredores (2016–2025)</h2>
+      <p class="note" style="margin-top:0">Personas físicas + sociedades de correduría inscritas en el Registro de la DGSFP. Tras crecer de forma casi ininterrumpida hasta 2023, la cifra cae por primera vez en 2024 (-0,9%) y sigue bajando en lo que va de 2025 (dato provisional a 21/11/2025, -6,6% adicional).</p>
       ${mktVBars(MKT_EVOL,cA)}
     </div>
 
     <div class="panel">
       <h2>Corredores frente al canal agencial y de bancaseguros</h2>
-      <p class="note" style="margin-top:0">Reparto del volumen total de primas intermediadas en 2023 entre corredores de seguros y el conjunto de agentes vinculados + operadores de banca-seguros (vinculados y exclusivos).</p>
-      ${mktSplit('No Vida — 21.480 M€ intermediados',64.4,35.6,'Corredores','Agentes y bancaseguros',cA,cB)}
-      ${mktSplit('Vida — 28.610 M€ intermediados',10.9,89.1,'Corredores','Agentes y bancaseguros',cA,cB)}
+      <p class="note" style="margin-top:0">Reparto del volumen total de primas intermediadas en 2024 entre corredores de seguros y el conjunto de agentes vinculados + operadores de banca-seguros (vinculados y exclusivos).</p>
+      ${mktSplit('No Vida — 22.889 M€ intermediados',62.6,37.4,'Corredores','Agentes y bancaseguros',cA,cB)}
+      ${mktSplit('Vida — 23.478 M€ intermediados',12.3,87.7,'Corredores','Agentes y bancaseguros',cA,cB)}
       <div class="mkt-split-legend"><span><i style="background:${cA}"></i>Corredores de seguros</span><span><i style="background:${cB}"></i>Agentes vinculados + banca-seguros</span></div>
-      <div class="mkt-insight" style="margin-top:14px">La foto se invierte por completo entre ramos. En <b>No Vida los corredores son mayoría</b> (64,4%): es el terreno propio de la correduría independiente. En <b>Vida domina la bancaseguros</b> (89,1% entre agentes y bancos): los corredores apenas intermedian el 10,9% de un mercado, además, mucho mayor (28.610 M€ frente a 21.480 M€ en No Vida). El canal agencial/bancaseguros también cobra más comisión relativa en No Vida (18,3% de media, frente al 12,5% de los corredores).</div>
+      <div class="mkt-insight" style="margin-top:14px">La foto se invierte por completo entre ramos. En <b>No Vida los corredores son mayoría</b> (62,6%, algo menos que el 64,4% de 2023): es el terreno propio de la correduría independiente. En <b>Vida domina la bancaseguros</b> (87,7%): los corredores intermedian el 12,3% de un mercado que además se ha contraído con fuerza (23.478 M€ frente a 28.610 M€ en 2023, -18%), mientras el No Vida sigue creciendo (22.889 M€, +6,6%). El canal agencial/bancaseguros también cobra más comisión relativa en No Vida (18,3% de media, frente al 13,2% de los corredores).</div>
     </div>
 
     <div class="mkt-bars">
       <div class="panel">
         <h2>Dónde está el negocio: cartera por ramo</h2>
-        <p class="note" style="margin-top:0">% sobre el total de primas No Vida intermediadas por corredores en 2023. Autos concentra por sí solo casi una cuarta parte.</p>
+        <p class="note" style="margin-top:0">% sobre el total de primas No Vida intermediadas por corredores en 2024. Autos particulares concentra por sí solo casi una quinta parte.</p>
         ${mktHBars(MKT_RAMOS,1,v=>pct(v/100),cA,25)}
       </div>
       <div class="panel">
@@ -2489,23 +2490,23 @@ function renderMarket(){
       </div>
     </div>
     <div class="panel">
-      <div class="mkt-insight">Autos mueve el <b>22,8%</b> del negocio pero solo paga un <b>12,2%</b> de comisión — de los ramos peor pagados. En el otro extremo, multirriesgo hogar pesa poco en volumen (3,9%) pero paga casi el doble (24,8%). Una cartera concentrada en autos factura mucho pero a margen bajo; diversificar hacia hogar, decesos o asistencia mejora la comisión media aunque venda menos primas.</div>
+      <div class="mkt-insight">Asistencia sanitaria mueve el <b>13,1%</b> del negocio pero solo paga un <b>10,1%</b> de comisión — de los peor pagados entre los ramos grandes; otros multirriesgos, con un 5,1% de volumen, paga aún menos (6,4%). En el otro extremo, decesos apenas pesa (0,7% del negocio) pero paga un 33,1%; multirriesgo hogar, con más volumen (4,3%), paga casi el doble de la media (25,2%). Una cartera concentrada en autos o salud factura mucho pero a margen bajo; diversificar hacia hogar, decesos o comunidades mejora la comisión media aunque venda menos primas.</div>
     </div>
 
     <div class="panel">
       <h2>Corredores: personas físicas, sociedades y reaseguros</h2>
-      <p class="note" style="margin-top:0">Volumen total de negocio No Vida 2023, por tipo de corredor.</p>
+      <p class="note" style="margin-top:0">Volumen total de negocio No Vida 2024, por tipo de corredor.</p>
       <div class="dos-scroll"><table class="dos-t">
         <tr><th></th><th>Primas intermediadas</th><th>Comisión media</th></tr>
-        <tr><td>Corredores persona física</td><td>${meur(316660578.39)}</td><td>${pct(0.1499)}</td></tr>
-        <tr><td>Sociedades de correduría</td><td>${meur(11800806224.77)}</td><td>${pct(0.1333)}</td></tr>
-        <tr><td>Corredores de reaseguros</td><td>${meur(1713888759.93)}</td><td>${pct(0.0630)}</td></tr>
+        <tr><td>Corredores persona física</td><td>${meur(317124449.74)}</td><td>${pct(0.1489)}</td></tr>
+        <tr><td>Sociedades de correduría</td><td>${meur(12646790825.56)}</td><td>${pct(0.1392)}</td></tr>
+        <tr><td>Corredores de reaseguros</td><td>${meur(1358593318.82)}</td><td>${pct(0.0595)}</td></tr>
       </table></div>
-      <p class="dos-razon" style="margin-top:8px">Las sociedades de correduría mueven 37 veces más volumen que los corredores persona física, y cobran algo menos por ello. Los corredores de reaseguros —que intermedian entre aseguradoras, no con el cliente final— trabajan con una comisión mucho más ajustada (6,3%), propia de un negocio mayorista.</p>
+      <p class="dos-razon" style="margin-top:8px">Las sociedades de correduría mueven casi 40 veces más volumen que los corredores persona física, y cobran algo menos por ello. Los corredores de reaseguros —que intermedian entre aseguradoras, no con el cliente final— trabajan con una comisión mucho más ajustada (6,0%), propia de un negocio mayorista.</p>
     </div>
 
     <div class="panel">
-      <p class="mkt-fuente"><b>Fuente:</b> Informe estadístico anual de mediación 2023, Dirección General de Seguros y Fondos de Pensiones (DGSFP). Datos registrales a 04/11/2024; actividad de mediación del ejercicio 2023 remitida antes del 30/04/2024. Cifras de «volumen total de negocio» = primas devengadas intermediadas netas de anulaciones en vigor durante 2023, incluida la nueva producción.</p>
+      <p class="mkt-fuente"><b>Fuente:</b> Informe estadístico anual de mediación 2024, Dirección General de Seguros y Fondos de Pensiones (DGSFP). Datos registrales a 21/11/2025 (cifra de 2025 provisional, año en curso); actividad de mediación del ejercicio 2024 remitida antes del 30/04/2025. Cifras de «volumen total de negocio» = primas devengadas intermediadas netas de anulaciones en vigor durante 2024, incluida la nueva producción.</p>
     </div>`;
 }
 function closeDossier(){ document.getElementById('dosBackdrop').classList.remove('on'); document.body.style.overflow=''; }
