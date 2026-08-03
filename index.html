@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Simulador Business Plan — Correduría</title>
+<title>Modeloo</title>
 <style>
   /* ============================================================
      Sistema de diseño estilo shadcn/ui, en CSS plano.
@@ -212,19 +212,16 @@
   .xlsbtn:hover{background:#15803d}
   .dlbtn:active,.xlsbtn:active,.scenbtn:active,.pmail:active{transform:translateY(.5px)}
   /* variante outline */
-  .reset,.mail-cancel,.ctrlbtn,.presetbtns .pshare,.nreplybox .nreply-btn,.notecard .nact button,.dos-x{
+  .reset,.mail-cancel,.ctrlbtn,.presetbtns .pshare,.dos-x{
     font-size:12.5px;font-weight:500;padding:8px 14px;border-radius:var(--radius);cursor:pointer;
     border:1px solid var(--input);background:var(--background);color:var(--foreground);
     display:inline-flex;align-items:center;justify-content:center;gap:6px;
     transition:background .15s,border-color .15s,color .15s}
-  .reset:hover,.mail-cancel:hover,.ctrlbtn:hover,.presetbtns .pshare:hover,.nreplybox .nreply-btn:hover,
-  .notecard .nact button:hover,.dos-x:hover{background:var(--accent)}
+  .reset:hover,.mail-cancel:hover,.ctrlbtn:hover,.presetbtns .pshare:hover,.dos-x:hover{background:var(--accent)}
   .reset{width:100%;margin-top:8px;color:var(--muted-foreground)}
   /* variante destructiva */
-  .presetbtns .pdel,.notecard .nact .ndel{border-color:var(--destructive-border);color:var(--destructive);background:var(--background)}
-  .presetbtns .pdel:hover,.notecard .nact .ndel:hover{background:var(--destructive-bg)}
-  .notecard .nact .nresolve{border-color:var(--success-border);color:var(--success)}
-  .notecard .nact .nresolve:hover{background:var(--success-bg)}
+  .presetbtns .pdel{border-color:var(--destructive-border);color:var(--destructive);background:var(--background)}
+  .presetbtns .pdel:hover{background:var(--destructive-bg)}
 
   /* ===== gráfico ===== */
   .chartbox{cursor:crosshair;position:relative;height:340px;width:100%}
@@ -396,45 +393,6 @@
     #tbl tr.pl-row>td,#tbl tr.pl-row>td>.cw,.tri,.seg button,.tab,.kpi{transition:none}
   }
   .note{font-size:12px;color:var(--muted-foreground);margin-top:12px;line-height:1.6}
-
-  /* ===== cuaderno de dudas / notas ===== */
-  .tabbadge{display:none;background:var(--destructive);color:var(--destructive-foreground);border-radius:999px;
-    font-size:10px;font-weight:600;padding:1px 7px;margin-left:5px;vertical-align:1px}
-  .tabbadge.show{display:inline-block}
-  .noteform{display:grid;gap:10px;margin:14px 0}
-  .noteform .noteauthor{width:240px;max-width:100%;padding:8px 10px;border:1px solid var(--input);
-    border-radius:var(--radius);font-size:13px;background:var(--background);transition:border-color .15s}
-  .noteform textarea,.nreplybox textarea{width:100%;padding:9px 11px;border:1px solid var(--input);
-    border-radius:var(--radius);font-family:inherit;font-size:13px;resize:vertical;background:var(--background);
-    color:var(--foreground);line-height:1.5;transition:border-color .15s}
-  .noteform .noteauthor:hover,.noteform textarea:hover,.nreplybox textarea:hover{border-color:#cbd5e1}
-  .noteform #noteAdd{justify-self:start}
-  .noteopts{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12.5px;
-    color:var(--muted-foreground);margin:6px 0 14px}
-  .noteopts label{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
-  .noteopts input[type=checkbox]{accent-color:var(--primary);width:15px;height:15px;cursor:pointer}
-  .notecard{border:1px solid var(--border);border-left:3px solid var(--warning);border-radius:var(--radius);
-    padding:14px 16px;margin-bottom:10px;background:var(--card);box-shadow:var(--shadow-sm)}
-  .notecard.done{border-left-color:var(--success);background:var(--success-bg);opacity:.8}
-  .notecard .nmeta{font-size:11.5px;color:var(--muted-foreground);margin-bottom:6px;display:flex;
-    justify-content:space-between;gap:10px}
-  .notecard .ntext{font-size:13.5px;line-height:1.55;white-space:pre-wrap;color:var(--foreground)}
-  .notecard.done .ntext{text-decoration:line-through;color:var(--muted-foreground)}
-  .notecard .nact{margin-top:12px;display:flex;gap:8px}
-  .notecard .nact button{font-size:11.5px;padding:5px 11px}
-  .notecard .nact .nmove{padding:5px 9px;color:var(--muted-foreground)}
-  .nreplies{margin:12px 0 4px;border-left:2px solid var(--border);padding-left:12px;display:flex;
-    flex-direction:column;gap:10px}
-  .nreply .rmeta{font-size:11px;color:var(--muted-foreground);display:flex;justify-content:space-between;
-    gap:10px;margin-bottom:3px}
-  .nreply .rtext{font-size:12.5px;line-height:1.5;white-space:pre-wrap;color:var(--foreground)}
-  .nreply .rdel{border:0;background:none;color:#cbd5e1;cursor:pointer;font-size:11px;padding:0 2px;line-height:1}
-  .nreply .rdel:hover{color:var(--destructive)}
-  .nreplybox{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
-  .nreplybox textarea{flex:1;font-size:12.5px;padding:7px 10px}
-  .nreplybox .nreply-btn{font-size:11.5px;padding:7px 13px;white-space:nowrap;color:var(--primary);border-color:var(--input)}
-  .noteempty{font-size:13px;color:var(--muted-foreground);padding:32px 18px;text-align:center;
-    border:1px dashed var(--border);border-radius:var(--radius-lg);background:var(--muted-bg)}
 
   /* ===== calendario de partidas ===== */
   .phrow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 0;
@@ -621,7 +579,7 @@
 </head>
 <body>
 <div class="topbar">
-  <div class="brand">Simulador Business Plan — Correduría</div>
+  <div class="brand">Modeloo</div>
   <div class="tabs">
     <button class="tab on" data-tab="dash">Dashboard</button>
     <button class="tab" data-tab="pl">Cuenta de resultados (P&amp;L)</button>
@@ -629,20 +587,6 @@
     <button class="tab" data-tab="comp">Comparativa</button>
     <button class="tab" data-tab="companies">Compañías</button>
     <button class="tab" data-tab="market">Mercado</button>
-    <button class="tab" data-tab="notes">Dudas / Notas <span class="tabbadge" id="notesBadge"></span></button>
-  </div>
-  <div class="topbar-actions">
-    <button class="ctrlbtn" id="ctrlToggle" aria-expanded="false" aria-controls="ctrlWrap"
-      title="Mostrar u ocultar los parámetros del modelo">⚙ Parámetros del modelo <span class="ctrl-chev">▾</span></button>
-    <div class="scen-wrap">
-      <button class="scenbtn" id="btnScenarios" aria-expanded="false" title="Escenarios, compartir y exportar">☰ Escenarios y exportar</button>
-      <div id="scenPanel" class="scen-panel">
-        <div class="scen-exports">
-          <button class="xlsbtn" id="xls">⬇ Exportar a Sheets</button>
-          <button class="dlbtn" id="dl">⬇ Descargar PDF</button>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 <div id="ctrlWrap" aria-hidden="true">
@@ -707,6 +651,19 @@
           <button data-g="año" class="on">Año</button>
         </span>
       </div>
+      <div class="topbar-actions">
+        <button class="ctrlbtn" id="ctrlToggle" aria-expanded="false" aria-controls="ctrlWrap"
+          title="Mostrar u ocultar los parámetros del modelo">⚙ Parámetros del modelo <span class="ctrl-chev">▾</span></button>
+        <div class="scen-wrap">
+          <button class="scenbtn" id="btnScenarios" aria-expanded="false" title="Escenarios, compartir y exportar">☰ Escenarios y exportar</button>
+          <div id="scenPanel" class="scen-panel">
+            <div class="scen-exports">
+              <button class="xlsbtn" id="xls">⬇ Exportar a Sheets</button>
+              <button class="dlbtn" id="dl">⬇ Descargar PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div id="tab-dash" class="tabpane">
       <div class="kpis" id="kpis"></div>
@@ -760,22 +717,6 @@
     </div>
     <div id="tab-market" class="tabpane" style="display:none">
       <div id="marketBody"></div>
-    </div>
-    <div id="tab-notes" class="tabpane" style="display:none">
-      <div class="panel">
-        <h2>Dudas y notas sobre el modelo</h2>
-        <p class="note" style="margin-top:0">Apunta cualquier duda, supuesto a revisar u observación. Se guardan en este navegador y se incluyen al usar <b>⤓ Exportar</b> (panel lateral), así puedes compartirlas con tus compañeros y recoger su feedback.</p>
-        <div class="noteform">
-          <input id="noteAuthor" class="noteauthor" placeholder="Tu nombre (opcional)">
-          <textarea id="noteText" rows="3" placeholder="Escribe aquí una duda u observación sobre el modelo…"></textarea>
-          <button id="noteAdd" class="dlbtn">＋ Añadir duda</button>
-        </div>
-        <div class="noteopts">
-          <label><input type="checkbox" id="noteHideDone"> Ocultar resueltas</label>
-          <span id="noteCount" class="note"></span>
-        </div>
-        <div id="noteList"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -896,15 +837,12 @@ function applySnapshot(s){
   if(s.HY){ HY=s.HY; HM=HY*12; if(YF>HY) YF=0; }
   if(s.PHASE && typeof s.PHASE==='object') PHASE=s.PHASE;
   if(Array.isArray(s.CMP_SEL)) CMP_SEL=new Set(s.CMP_SEL);
-  if(s.ACTIVE_TAB) ACTIVE_TAB=s.ACTIVE_TAB;
+  if(s.ACTIVE_TAB) ACTIVE_TAB=(s.ACTIVE_TAB==='notes')?'dash':s.ACTIVE_TAB;
 }
 function saveState(){ try{ localStorage.setItem(LS_STATE, JSON.stringify(snapshot())); }catch(e){} }
 function loadState(){ try{ return JSON.parse(localStorage.getItem(LS_STATE)); }catch(e){ return null; } }
 function loadPresets(){ try{ return JSON.parse(localStorage.getItem(LS_PRESETS))||{}; }catch(e){ return {}; } }
 function savePresets(p){ try{ localStorage.setItem(LS_PRESETS, JSON.stringify(p)); }catch(e){} }
-const LS_NOTES='cbp_notes_v1';
-function loadNotes(){ try{ return JSON.parse(localStorage.getItem(LS_NOTES))||[]; }catch(e){ return []; } }
-function saveNotes(n){ try{ localStorage.setItem(LS_NOTES, JSON.stringify(n)); }catch(e){} }
 // restaura los últimos valores antes de construir el formulario
 applySnapshot(loadState());
 // si se abre con un enlace compartido (#s=...), ese escenario tiene prioridad
@@ -1384,100 +1322,15 @@ function activateTab(id,doSave){
   document.getElementById('tab-comp').style.display=(id==='comp')?'flex':'none';
   document.getElementById('tab-companies').style.display=(id==='companies')?'flex':'none';
   document.getElementById('tab-market').style.display=(id==='market')?'flex':'none';
-  document.getElementById('tab-notes').style.display=(id==='notes')?'flex':'none';
-  // el cuaderno de dudas, la gestión de compañías y el mercado no dependen de los filtros: allí la barra sobra
-  document.getElementById('filterbar').style.display=(id==='notes'||id==='companies'||id==='market')?'none':'flex';
+  // la gestión de compañías y el mercado no dependen de los filtros: allí la barra sobra
+  document.getElementById('filterbar').style.display=(id==='companies'||id==='market')?'none':'flex';
   if(id==='pl'||id==='dash') render();
   if(id==='comp') renderComp();
   if(id==='companies') renderCompanyList();
   if(id==='market') renderMarket();
-  if(id==='notes') renderNotes();
   ACTIVE_TAB=id; if(doSave!==false) saveState();
 }
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>activateTab(t.dataset.tab)));
-
-// ---- cuaderno de dudas / notas ----
-function notesBadge(){
-  const open=loadNotes().filter(n=>!n.done).length, b=document.getElementById('notesBadge');
-  if(!b) return; b.textContent=open||''; b.classList.toggle('show',open>0);
-}
-function renderNotes(){
-  let notes=loadNotes();
-  // migración única: fija el orden actual (resueltas abajo, recientes arriba) para poder reordenar a mano después
-  if(notes.length && !localStorage.getItem('cbp_notes_ord')){
-    notes=notes.slice().sort((a,b)=>(a.done-b.done)||(b.ts-a.ts)); saveNotes(notes);
-  }
-  try{ localStorage.setItem('cbp_notes_ord','1'); }catch(e){}
-  const hideDone=document.getElementById('noteHideDone').checked;
-  const total=notes.length, done=notes.filter(n=>n.done).length;
-  document.getElementById('noteCount').textContent= total? `${total} duda${total!==1?'s':''} · ${done} resuelta${done!==1?'s':''}` : '';
-  const list=notes.filter(n=>!(hideDone&&n.done));   // orden manual (el del array)
-  const el=document.getElementById('noteList');
-  if(!list.length){ el.innerHTML=`<div class="noteempty">${total?'No hay dudas que mostrar.':'Aún no hay dudas anotadas. Escribe la primera arriba.'}</div>`; notesBadge(); return; }
-  const fdate=ts=>new Date(ts).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  el.innerHTML=list.map(n=>{
-    const who=n.author?escAttr(n.author):'Anónimo';
-    const reps=Array.isArray(n.replies)?n.replies:[];
-    const repsHtml= reps.length? `<div class="nreplies">`+reps.map((r,ri)=>`
-        <div class="nreply">
-          <div class="rmeta"><span>${r.author?escAttr(r.author):'Anónimo'}</span><span>${fdate(r.ts)} <button class="rdel" data-act="repdel" data-id="${n.id}" data-ri="${ri}" title="Borrar respuesta">✕</button></span></div>
-          <div class="rtext">${escAttr(r.text)}</div>
-        </div>`).join('')+`</div>` : '';
-    return `<div class="notecard${n.done?' done':''}">
-      <div class="nmeta"><span>${who}</span><span>${fdate(n.ts)}</span></div>
-      <div class="ntext">${escAttr(n.text)}</div>
-      ${repsHtml}
-      <div class="nact">
-        <button class="nmove" data-act="up" data-id="${n.id}" title="Subir">▲</button>
-        <button class="nmove" data-act="down" data-id="${n.id}" title="Bajar">▼</button>
-        <button class="nresolve" data-act="toggle" data-id="${n.id}">${n.done?'↩ Reabrir':'✓ Marcar resuelta'}</button>
-        <button class="ndel" data-act="del" data-id="${n.id}">🗑 Borrar</button>
-      </div>
-      <div class="nreplybox">
-        <textarea id="reply_${n.id}" rows="2" placeholder="Escribe una respuesta o comentario…"></textarea>
-        <button class="nreply-btn" data-act="reply" data-id="${n.id}">↳ Responder</button>
-      </div></div>`;
-  }).join('');
-  notesBadge();
-}
-document.getElementById('noteAdd').onclick=()=>{
-  const ta=document.getElementById('noteText'), text=ta.value.trim();
-  if(!text){ ta.focus(); return; }
-  const author=document.getElementById('noteAuthor').value.trim();
-  const notes=loadNotes();
-  notes.unshift({id:'n'+Date.now()+Math.floor(Math.random()*1000),text,author,ts:Date.now(),done:false});
-  saveNotes(notes); ta.value=''; renderNotes();
-};
-document.getElementById('noteText').addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)) document.getElementById('noteAdd').click(); });
-document.getElementById('noteHideDone').addEventListener('change',renderNotes);
-document.getElementById('noteList').addEventListener('click',e=>{
-  const btn=e.target.closest('button[data-act]'); if(!btn) return;
-  const id=btn.dataset.id, act=btn.dataset.act, notes=loadNotes(), n=notes.find(x=>x.id===id);
-  if(!n) return;
-  if(act==='toggle'){ n.done=!n.done; saveNotes(notes); renderNotes(); }
-  else if(act==='up'||act==='down'){
-    const hideDone=document.getElementById('noteHideDone').checked;
-    const visible=notes.filter(x=>!(hideDone&&x.done));
-    const vi=visible.findIndex(x=>x.id===id), nb=visible[vi+(act==='up'?-1:1)];
-    if(!nb) return;
-    const i1=notes.indexOf(n), i2=notes.indexOf(nb);
-    [notes[i1],notes[i2]]=[notes[i2],notes[i1]];
-    saveNotes(notes); renderNotes();
-  }
-  else if(act==='del'){ if(confirm('¿Borrar esta duda y sus respuestas?')){ saveNotes(notes.filter(x=>x.id!==id)); renderNotes(); } }
-  else if(act==='reply'){
-    const ta=document.getElementById('reply_'+id), text=ta?ta.value.trim():'';
-    if(!text){ ta&&ta.focus(); return; }
-    const author=document.getElementById('noteAuthor').value.trim();
-    if(!Array.isArray(n.replies)) n.replies=[];
-    n.replies.push({author,text,ts:Date.now()});
-    saveNotes(notes); renderNotes();
-  }
-  else if(act==='repdel'){
-    const ri=parseInt(btn.dataset.ri);
-    if(Array.isArray(n.replies)&&n.replies[ri]&&confirm('¿Borrar esta respuesta?')){ n.replies.splice(ri,1); saveNotes(notes); renderNotes(); }
-  }
-});
 
 // ---- comparativa con la competencia (Pacc, Quadis, AMV) ----
 const LOGOS={
@@ -2945,7 +2798,7 @@ function buildReport(){
   const tot=totalCol(R.mon,0);
   const bA=bucketize(R.mon,'año',0), bT=bucketize(R.mon,'tri',0), bM=bucketize(R.mon,'mes',0);
   // PÁGINA 1 (vertical): Supuestos
-  let h=`<section class="pg"><div class="rhead"><h1>Informe Business Plan — Correduría de seguros</h1>
+  let h=`<section class="pg"><div class="rhead"><h1>Modeloo — Informe Business Plan de correduría</h1>
     <div class="rmeta">Generado el ${new Date().toLocaleDateString('es-ES')} · Horizonte ${HM} meses (${HY} años) · Verticales: Auto + Multirriesgo Empresas</div></div>`;
   h+=`<div class="rk">
     <div><span>Ingresos · ${HY} años</span><b>${eur(tot.itot)}</b></div>
@@ -3223,7 +3076,7 @@ function buildModelSheets(){
   for(let mm=1;mm<=N;mm++) monP.push({label:'M'+mm,r1:mm+1,r2:mm+1});
   // ---- Resumen (KPIs con fórmulas) ----
   const resumen=[
-    ['Business Plan — Correduría de seguros'],
+    ['Modeloo — Business Plan de correduría'],
     ['Generado',new Date().toLocaleString('es-ES')],
     ['Horizonte (años)',HY],['Horizonte (meses)',N],
     ['Verticales','Auto + Multirriesgo Empresas'],
@@ -3353,7 +3206,7 @@ document.getElementById('btnShare').onclick=async()=>{
   catch(e){ prompt('Copia este enlace para compartir el escenario:', url); }
 };
 function downloadScenarioJSON(){
-  const data={tipo:'simulador-correduria',state:snapshot(),presets:loadPresets(),notes:loadNotes()};
+  const data={tipo:'simulador-correduria',state:snapshot(),presets:loadPresets()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download='escenarios_correduria.json'; document.body.appendChild(a); a.click();
@@ -3366,9 +3219,8 @@ document.getElementById('fileImport').onchange=e=>{
   const rd=new FileReader();
   rd.onload=()=>{ try{ const d=JSON.parse(rd.result);
       if(d.presets){ const p=loadPresets(); Object.assign(p,d.presets); savePresets(p); refreshPresetSel(''); }
-      if(Array.isArray(d.notes)){ const cur=loadNotes(), seen=new Set(cur.map(n=>n.id)); d.notes.forEach(n=>{ if(!seen.has(n.id)) cur.push(n); }); saveNotes(cur); renderNotes(); }
       if(d.state){ applySnapshot(d.state); syncControls(); }
-      flash('Escenarios y notas importados ✓');
+      flash('Escenarios importados ✓');
     }catch(err){ flash('Archivo no válido'); }
     e.target.value=''; };
   rd.readAsText(f);
@@ -3386,7 +3238,7 @@ document.getElementById('mailGo').onclick=()=>{
   const nota=document.getElementById('mailMsg').value.trim();
   const url=buildShareURL();
   // Abrir borrador de Gmail con el enlace (el escenario va embebido en la propia URL)
-  const su='Business Plan Correduría — simulador interactivo';
+  const su='Modeloo — simulador de business plan de correduría';
   const body=
     (nota?nota+'\n\n':'')+
     'Te comparto el simulador de business plan de la correduría.\n\n'+
@@ -3441,7 +3293,6 @@ window.addEventListener('resize',()=>render());
 document.getElementById('selHorizon').value=String(HY);
 [...document.getElementById('segGran').children].forEach(b=>b.classList.toggle('on',b.dataset.g===GRAN));
 refreshPresetSel('');
-notesBadge();
 render();
 activateTab(ACTIVE_TAB,false);
 </script>
