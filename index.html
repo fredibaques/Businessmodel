@@ -343,14 +343,12 @@
   .mkt-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
   .mkt-insight{padding:12px 14px;border-radius:var(--radius);border:1px dashed var(--border);background:var(--muted-bg);font-size:12.5px;line-height:1.6}
   .mkt-insight b{color:var(--foreground)}
-  .mkt-bars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-  @media(max-width:900px){.mkt-bars{grid-template-columns:1fr}}
-  .mkt-hbar-list{display:flex;flex-direction:column;gap:9px;margin-top:4px}
-  .mkt-hbar-row{display:grid;grid-template-columns:172px 1fr 50px;align-items:center;gap:8px;font-size:12px}
-  .mkt-hbar-row .mkt-hbar-lab{color:var(--foreground);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .mkt-hbar-track{background:var(--muted-bg);border-radius:999px;height:16px;overflow:hidden}
-  .mkt-hbar-fill{height:100%;border-radius:999px;transition:width .3s ease}
-  .mkt-hbar-row .mkt-hbar-val{font-weight:600;font-variant-numeric:tabular-nums}
+  .mkt-ramos-t th.mkt-sortable{cursor:pointer;user-select:none;white-space:nowrap}
+  .mkt-ramos-t th.mkt-sortable:hover{color:var(--foreground)}
+  .mkt-ramos-t th.mkt-sortable.on{color:var(--foreground);font-weight:700}
+  .mkt-cell{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end}
+  .mkt-track{width:70px;height:7px;background:var(--muted-bg);border-radius:4px;overflow:hidden;flex:0 0 auto}
+  .mkt-fill{height:100%;border-radius:4px}
   .mkt-split{margin:14px 0}
   .mkt-split-lab{font-size:12.5px;font-weight:600;color:var(--foreground);margin-bottom:6px}
   .mkt-split-bar{display:flex;height:30px;border-radius:var(--radius-sm);overflow:hidden;box-shadow:inset 0 0 0 1px var(--border)}
@@ -2408,28 +2406,55 @@ document.getElementById('compDetailBack').addEventListener('click',closeCompanyD
 const meur=v=>(v/1e6).toLocaleString('es-ES',{maximumFractionDigits:0})+' M€';
 // evolución del registro DGSFP; 2025 es una foto provisional a 21/11/2025 (año en curso, no cierre)
 const MKT_EVOL=[[2016,3254],[2017,3276],[2018,3378],[2019,3460],[2020,3539],[2021,3655],[2022,3713],[2023,3721],[2024,3688],['2025*',3445]];
-// distribución de la cartera de corredores de seguros por ramo · No Vida 2024 (% sobre primas totales del ramo, corredores física+jurídica+reaseguros)
-const MKT_RAMOS=[
- ['Autos particulares',19.10,13.33],
- ['Asistencia sanitaria',13.14,10.10],
- ['Multirriesgo industriales',7.37,14.91],
- ['RC general',6.66,15.31],
- ['Autos flotas',5.53,8.65],
- ['Otros multirriesgos',5.05,6.40],
- ['Incendios',4.89,7.82],
- ['Transportes',4.42,12.62],
- ['Resto de ramos',33.83,null],
+// cartera de corredores de seguros por ramo · No Vida 2024, en € (primas, comisiones); corredores física+jurídica+reaseguros combinados
+const MKT_RAMOS_FULL=[
+ ['Autos particulares',2735442829.36,364538986.21],
+ ['Asistencia sanitaria',1882433516.77,190202302.22],
+ ['Multirriesgo industriales',1055901257.84,157400578.89],
+ ['RC General',953322924.95,145959939.13],
+ ['Autos flotas',792518942.54,68551527.90],
+ ['Otros multirriesgos',723982611.41,46358090.84],
+ ['Incendios y elementos naturales',700584034.21,54815373.63],
+ ['Transportes',632676504.46,79837690.22],
+ ['Multirriesgo hogar',613670093.28,154356845.67],
+ ['RC en general: otros riesgos',555477664.38,61967745.99],
+ ['Enfermedad',406978510.53,43458675.86],
+ ['Accidentes',406318880.61,62293437.07],
+ ['Crédito',423292249.17,46161524.58],
+ ['Otros daños: seguros agrarios',349476438.22,41746916.23],
+ ['Caución',333675803.79,43225994.01],
+ ['Multirriesgo comunidades',303767030.94,63857099.08],
+ ['Multirriesgo comercios',295399712.65,46717982.79],
+ ['RC Profesional',265658858.61,38321456.68],
+ ['Otros daños: avería de maquinaria',167310636.79,31968966.64],
+ ['Pérdidas diversas',127161220.89,29838315.89],
+ ['Ciberriesgos',113151672.62,12340653.04],
+ ['RC Seguro D&O',115425350.97,18233597.87],
+ ['Decesos',101655762.66,33604337.29],
+ ['Otros daños: robo u otros',96269846.50,12930809.29],
+ ['Asistencia (viaje)',95775793.64,24947033.64],
+ ['Defensa jurídica',44249634.35,11152740.41],
+ ['RC medioambientales',25676204.67,4068696.26],
+ ['RC en general: riesgos nucleares',3911507.70,81198.64],
+ ['Dependencia',1343099.61,227561.66],
 ];
-function mktHBars(rows,idx,fmt,color,max){
-  max=max||Math.max(...rows.map(r=>r[idx]));
-  return `<div class="mkt-hbar-list">`+rows.map(r=>{
-    const v=r[idx];
-    if(v==null) return `<div class="mkt-hbar-row"><span class="mkt-hbar-lab">${escAttr(r[0])}</span><div class="mkt-hbar-track"></div><span class="mkt-hbar-val cnd">n/d</span></div>`;
-    const w=Math.max(2,(v/max)*100);
-    return `<div class="mkt-hbar-row"><span class="mkt-hbar-lab">${escAttr(r[0])}</span>`+
-      `<div class="mkt-hbar-track"><div class="mkt-hbar-fill" style="width:${w}%;background:${color}"></div></div>`+
-      `<span class="mkt-hbar-val">${fmt(v)}</span></div>`;
-  }).join('')+`</div>`;
+let MKT_SORT={key:'p',dir:-1};
+function mktRamosPaint(){
+  const box=document.getElementById('mktRamosPanel'); if(!box) return;
+  const totalP=MKT_RAMOS_FULL.reduce((s,r)=>s+r[1],0);
+  const totalC=MKT_RAMOS_FULL.reduce((s,r)=>s+r[2],0);
+  const rows=MKT_RAMOS_FULL.map(([name,p,c])=>({name,p,c,pPct:p/totalP,cPct:c/p}));
+  const maxPPct=Math.max(...rows.map(r=>r.pPct)), maxCPct=Math.max(...rows.map(r=>r.cPct));
+  const {key,dir}=MKT_SORT;
+  const sorted=rows.slice().sort((a,b)=> key==='name' ? dir*a.name.localeCompare(b.name,'es') : dir*(a[key]-b[key]));
+  const arrow=k=>key===k?(dir===1?' ▲':' ▼'):'';
+  const th=(k,label,align)=>`<th class="mkt-sortable${key===k?' on':''}" data-sort="${k}" style="text-align:${align||'right'}">${label}${arrow(k)}</th>`;
+  const cell=(v,max,color)=>`<td><div class="mkt-cell"><div class="mkt-track"><div class="mkt-fill" style="width:${Math.max(2,v/max*100)}%;background:${color}"></div></div><span>${pct(v)}</span></div></td>`;
+  box.innerHTML=`<div class="dos-scroll"><table class="dos-t mkt-ramos-t">
+    <tr>${th('name','Ramo','left')}${th('p','Primas')}${th('pPct','% primas')}${th('c','Comisión')}${th('cPct','% comisión')}</tr>
+    ${sorted.map(r=>`<tr><td>${escAttr(r.name)}</td><td>${eur(r.p)}</td>${cell(r.pPct,maxPPct,'#1f3864')}<td>${eur(r.c)}</td>${cell(r.cPct,maxCPct,'#1f9d57')}</tr>`).join('')}
+    <tr class="dos-tot"><td>Total</td><td>${eur(totalP)}</td><td>${pct(1)}</td><td>${eur(totalC)}</td><td>${pct(totalC/totalP)}</td></tr>
+  </table></div>`;
 }
 function mktVBars(rows,color){
   const max=Math.max(...rows.map(r=>r[1]));
@@ -2477,20 +2502,11 @@ function renderMarket(){
       <div class="mkt-insight" style="margin-top:14px">La foto se invierte por completo entre ramos. En <b>No Vida los corredores son mayoría</b> (62,6%, algo menos que el 64,4% de 2023): es el terreno propio de la correduría independiente. En <b>Vida domina la bancaseguros</b> (87,7%): los corredores intermedian el 12,3% de un mercado que además se ha contraído con fuerza (23.478 M€ frente a 28.610 M€ en 2023, -18%), mientras el No Vida sigue creciendo (22.889 M€, +6,6%). El canal agencial/bancaseguros también cobra más comisión relativa en No Vida (18,3% de media, frente al 13,2% de los corredores).</div>
     </div>
 
-    <div class="mkt-bars">
-      <div class="panel">
-        <h2>Dónde está el negocio: cartera por ramo</h2>
-        <p class="note" style="margin-top:0">% sobre el total de primas No Vida intermediadas por corredores en 2024. Autos particulares concentra por sí solo casi una quinta parte.</p>
-        ${mktHBars(MKT_RAMOS,1,v=>pct(v/100),cA,25)}
-      </div>
-      <div class="panel">
-        <h2>Qué ramos pagan mejor comisión</h2>
-        <p class="note" style="margin-top:0">Comisión media sobre la prima, mismos ramos que a la izquierda. El orden cambia por completo.</p>
-        ${mktHBars(MKT_RAMOS,2,v=>pct(v/100),'#1f9d57',25)}
-      </div>
-    </div>
     <div class="panel">
-      <div class="mkt-insight">Asistencia sanitaria mueve el <b>13,1%</b> del negocio pero solo paga un <b>10,1%</b> de comisión — de los peor pagados entre los ramos grandes; otros multirriesgos, con un 5,1% de volumen, paga aún menos (6,4%). En el otro extremo, decesos apenas pesa (0,7% del negocio) pero paga un 33,1%; multirriesgo hogar, con más volumen (4,3%), paga casi el doble de la media (25,2%). Una cartera concentrada en autos o salud factura mucho pero a margen bajo; diversificar hacia hogar, decesos o comunidades mejora la comisión media aunque venda menos primas.</div>
+      <h2>Cartera por ramo: primas y comisión</h2>
+      <p class="note" style="margin-top:0">Los 29 ramos No Vida intermediados por corredores en 2024 (persona física + jurídica + reaseguros), con su volumen de primas y su comisión media. Pulsa una cabecera para ordenar la tabla por ese criterio.</p>
+      <div id="mktRamosPanel"></div>
+      <div class="mkt-insight" style="margin-top:14px">Autos particulares (19,1% del negocio) y asistencia sanitaria (13,1%) concentran casi un tercio del volumen, pero ambos pagan una comisión por debajo de la media (13,3% y 10,1%, frente al 13,2% global). En el otro extremo, decesos apenas pesa (0,7%) pero paga un 33,1%; multirriesgo hogar, con más volumen (4,3%), paga casi el doble de la media (25,2%). Ordena por «% comisión» para verlos todos.</div>
     </div>
 
     <div class="panel">
@@ -2508,6 +2524,13 @@ function renderMarket(){
     <div class="panel">
       <p class="mkt-fuente"><b>Fuente:</b> Informe estadístico anual de mediación 2024, Dirección General de Seguros y Fondos de Pensiones (DGSFP). Datos registrales a 21/11/2025 (cifra de 2025 provisional, año en curso); actividad de mediación del ejercicio 2024 remitida antes del 30/04/2025. Cifras de «volumen total de negocio» = primas devengadas intermediadas netas de anulaciones en vigor durante 2024, incluida la nueva producción.</p>
     </div>`;
+  mktRamosPaint();
+  box.addEventListener('click',e=>{
+    const th=e.target.closest('[data-sort]'); if(!th) return;
+    const k=th.dataset.sort;
+    if(MKT_SORT.key===k) MKT_SORT.dir*=-1; else MKT_SORT={key:k,dir:(k==='name')?1:-1};
+    mktRamosPaint();
+  });
 }
 function closeDossier(){ document.getElementById('dosBackdrop').classList.remove('on'); document.body.style.overflow=''; }
 document.getElementById('dosClose').addEventListener('click',closeDossier);
