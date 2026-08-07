@@ -162,6 +162,31 @@
   .pos{color:var(--success)} .neg{color:var(--destructive)}
   .be{padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--muted-bg);font-size:12.5px}
 
+  /* ===== selector de ámbito del dashboard (negocio completo / cada ramo) ===== */
+  .scopebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .scopebar .lab{font-size:11.5px;font-weight:500;color:var(--muted-foreground)}
+  .scopebar .seg button{padding:6px 14px;font-size:12.5px}
+  .scopehint{font-size:12px;color:var(--muted-foreground);flex:1 1 220px;min-width:0}
+
+  /* ===== techo de facturación ===== */
+  .ceilpanel{padding:18px 20px}
+  .cl-h{font-size:12.5px;font-weight:600;color:var(--muted-foreground);margin-bottom:14px}
+  .cl-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  @media(max-width:680px){.cl-grid{grid-template-columns:1fr}}
+  .cl-big .k{font-size:12.5px;font-weight:500;color:var(--muted-foreground)}
+  .cl-big .v{font-size:26px;font-weight:700;letter-spacing:-.02em;margin-top:5px;font-variant-numeric:tabular-nums}
+  .cl-big .s{font-size:11.5px;color:var(--muted-foreground);margin-top:4px}
+  .cl-bar{height:8px;border-radius:999px;background:var(--muted-bg);border:1px solid var(--border);
+    overflow:hidden;margin:18px 0 9px}
+  .cl-bar span{display:block;height:100%;background:var(--primary);border-radius:999px}
+  .cl-legend{font-size:12.5px}
+  .cl-marks{font-size:12px;color:var(--muted-foreground);margin-top:7px;font-variant-numeric:tabular-nums}
+  .cl-marks b{color:var(--foreground);font-weight:600}
+  .cl-marks .out{opacity:.55}
+  .cl-marks .out b{color:var(--muted-foreground)}
+  .cl-note{font-size:11.5px;color:var(--muted-foreground);margin-top:12px;padding-top:12px;
+    border-top:1px solid var(--border);line-height:1.6}
+
   /* ===== tablas ===== */
   .tblscroll{overflow-x:auto;width:100%;border:1px solid var(--border);border-radius:var(--radius);background:var(--card)}
   table{border-collapse:collapse;font-size:12.5px;width:100%;font-variant-numeric:tabular-nums}
@@ -664,8 +689,18 @@
       </div>
     </div>
     <div id="tab-dash" class="tabpane">
+      <div class="scopebar">
+        <span class="lab">Ámbito</span>
+        <span class="seg" id="segScope">
+          <button data-s="all" class="on">Todo el negocio</button>
+          <button data-s="auto">Auto</button>
+          <button data-s="mre">Multirriesgo Empresas</button>
+        </span>
+        <span class="scopehint" id="scopeHint"></span>
+      </div>
       <div class="kpis" id="kpis"></div>
       <div class="be" id="be"></div>
+      <div class="panel ceilpanel" id="ceil"></div>
       <p class="note" id="chartsNote" style="margin:0"></p>
       <div class="charts-grid" id="dashCharts"></div>
     </div>
@@ -733,7 +768,7 @@
 const DEF = {
   opsAuto:2800, gAuto:0, captAuto:5, primaAuto:450, ipsAuto:8, comAuto:11, retAuto:88, colabAuto:100, retroAutoNew:30, retroAutoRen:30,
   crossMre:2, propMre:8, gMre:0, primaMre:700, ipsMre:8, comMre:20, retMre:87, colabMre:0, retroMreNew:0, retroMreRen:0,
-  capGest:1200, capCom:150, maxCarga:120, estRatio:8, estThreshold:4, salG:2200, salC:2000, salE:3500, ss:31.5,
+  polEmp:1200, estRatio:8, estThreshold:4, salDir:2100, salE:3500, ss:31.5,
   alq:1200, puesto:150, swbase:300, swemp:80, rcbase:3000, rcpct:0.10, ases:350, cuotas:100, otros:5, infl:3
 };
 const CFG = [
@@ -762,13 +797,10 @@ const CFG = [
    ['retroMreRen','% retrocesión · renovaciones','pct',[0,60,1],'sobre la comisión de renovaciones','Parte de la comisión de las renovaciones de multirriesgo que se cede al colaborador.'],
  ]],
  ['PERSONAL (polivalente al inicio)','grp-per',[
-   ['capGest','Pólizas en cartera por persona (gestión)','num',[200,12000,100],'capacidad de gestión por empleado a tiempo completo','Cuántas pólizas en vigor puede administrar, atender y renovar una persona a tiempo completo (un FTE, empleado equivalente a tiempo completo).'],
-   ['capCom','Pólizas nuevas/mes por persona (venta)','num',[10,1500,10],'capacidad de venta por empleado a tiempo completo','Cuántas pólizas nuevas al mes puede cerrar un comercial a tiempo completo.'],
-   ['maxCarga','Carga máxima por persona antes de contratar (%)','pct',[100,160,5],'100% = contratar al llenarse · >100% = se estira antes','Hasta qué carga de trabajo (venta + gestión) puede asumir una persona antes de incorporar a la siguiente. 100% contrata en cuanto se llena; 120% deja que una persona —sobre todo al principio— trabaje algo por encima de lo normal antes de ampliar la plantilla. El trabajo se reparte entre todo el equipo (modelo polivalente).'],
+   ['polEmp','Pólizas por empleado','num',[200,12000,100],'único parámetro de capacidad: vender + gestionar','Cuántas pólizas puede llevar un empleado a tiempo completo: venderlas, administrarlas, atenderlas y renovarlas. Es el único parámetro de capacidad del modelo. La plantilla de gestión directa = cartera en vigor ÷ este número, redondeando al alza (mínimo 1 persona). Súbelo si tu operativa está muy automatizada; bájalo si das un servicio muy personal.'],
    ['estThreshold','Plantilla directa para crear estructura','num',[1,12,1],'sin mandos ni soporte por debajo de este nº','«Estructura» = mandos intermedios y soporte no productivo (coordinación, administración). No se crea hasta alcanzar este número de personas de gestión directa.'],
    ['estRatio','Gestión directa por cada persona de estructura','num',[2,20,1],'1 de estructura por cada X de gestión directa','Cuántas personas de gestión directa sostiene cada persona de estructura. Un ratio de 8 = 1 mando o soporte por cada 8 productivos.'],
-   ['salG','Salario bruto · gestión de pólizas (€/mes)','eur',null,'se combina con venta en el personal polivalente','Salario bruto mensual de una persona dedicada a gestionar cartera. Al inicio la misma persona vende y gestiona, por eso se pondera con el salario de venta.'],
-   ['salC','Salario bruto · venta/comercial (€/mes)','eur',null,'personal dedicado a la venta','Salario bruto mensual de una persona dedicada a la venta.'],
+   ['salDir','Salario bruto por empleado (€/mes)','eur',null,'plantilla polivalente: vende y gestiona','Salario bruto mensual de una persona de gestión directa. En el modelo polivalente la misma persona vende y gestiona, por eso hay un único sueldo para toda la plantilla productiva.'],
    ['salE','Salario bruto · estructura (€/mes)','eur',null,'mandos y soporte no productivo','Salario bruto mensual de una persona de estructura (mandos intermedios o soporte).'],
    ['ss','Seguridad Social sobre bruto','pct',[0,40,0.5],'cotización a cargo de la empresa','Cotización a la Seguridad Social que paga la empresa, como porcentaje del salario bruto.'],
  ]],
@@ -792,11 +824,14 @@ let HY=10, HM=120;   // horizonte: años y meses
 let PHASE={};  // { clave: {on:bool, from:int, to:int} }   to=0 => hasta el final
 let CMP_SEL=null;  // Set de claves de competidores seleccionados; se inicializa tras definir BENCH
 let ACTIVE_TAB='dash';  // pestaña activa; se restaura al refrescar
-const PHASE_KEYS=[['salG','Sueldo gestión'],['salC','Sueldo venta'],['salE','Sueldo estructura'],['alq','Alquiler y oficina'],['pue','Suministros / puesto'],['sw','Software y CRM'],['rc','RC y seguros'],['ase','Asesoría / gestoría'],['cuo','Cuotas DGSFP']];
-function phaseWin(key){ const p=PHASE[key]; if(!p||!p.on) return {from:1,to:HM}; return {from:Math.max(1,p.from||1), to:(p.to&&p.to>0)?Math.min(p.to,HM):HM}; }
+let SCOPE='all';        // ámbito del dashboard: 'all' | 'auto' | 'mre'
+const PHASE_KEYS=[['salDir','Sueldo plantilla'],['salE','Sueldo estructura'],['alq','Alquiler y oficina'],['pue','Suministros / puesto'],['sw','Software y CRM'],['rc','RC y seguros'],['ase','Asesoría / gestoría'],['cuo','Cuotas DGSFP']];
+// N = horizonte sobre el que se resuelve la ventana (por defecto el del plan; la proyección
+// a largo plazo del techo de facturación pasa el suyo para que los costes no se corten)
+function phaseWin(key,N){ N=N||HM; const p=PHASE[key]; if(!p||!p.on) return {from:1,to:N}; return {from:Math.max(1,p.from||1), to:(p.to&&p.to>0)?Math.min(p.to,N):N}; }
 // calendario integrado en el panel lateral: bajo qué parámetro aparece cada coste faseable
-const PHASE_ANCHOR={salG:'salG', salC:'salC', salE:'salE', alq:'alq', puesto:'pue', swbase:'sw', rcbase:'rc', ases:'ase', cuotas:'cuo'};
-const PHASE_SCOPE={salG:'afecta al sueldo de gestión (y su parte de SS)', salC:'afecta al sueldo de venta (y su parte de SS)', salE:'afecta al sueldo de estructura (y su parte de SS)', sw:'afecta a toda la tecnología (fijo + variable)', rc:'afecta al seguro RC completo'};
+const PHASE_ANCHOR={salDir:'salDir', salE:'salE', alq:'alq', puesto:'pue', swbase:'sw', rcbase:'rc', ases:'ase', cuotas:'cuo'};
+const PHASE_SCOPE={salDir:'afecta al sueldo de la plantilla directa (y su parte de SS)', salE:'afecta al sueldo de estructura (y su parte de SS)', sw:'afecta a toda la tecnología (fijo + variable)', rc:'afecta al seguro RC completo'};
 const PHASE_APPLY={};
 function makePhaseRow(pk){
   const wrap=document.createElement('div'); wrap.className='phinline';
@@ -826,16 +861,32 @@ function syncPhaseControls(){
 
 /* ---- persistencia y escenarios (localStorage) ---- */
 const LS_STATE='cbp_state_v1', LS_PRESETS='cbp_presets_v1';
-function snapshot(){ return {V:{...V}, GRAN, YF, HY, PHASE:JSON.parse(JSON.stringify(PHASE)), CMP_SEL: CMP_SEL?[...CMP_SEL]:null, ACTIVE_TAB}; }
+function snapshot(){ return {V:{...V}, GRAN, YF, HY, PHASE:JSON.parse(JSON.stringify(PHASE)), CMP_SEL: CMP_SEL?[...CMP_SEL]:null, ACTIVE_TAB, SCOPE}; }
+// escenarios guardados antes de la simplificación traían tres parámetros de capacidad
+// (capGest/capCom/maxCarga) y dos sueldos de plantilla (salG/salC); se reducen a polEmp y salDir
+function migrateV(o){
+  const v={...o};
+  if(v.polEmp==null && v.capGest!=null) v.polEmp=v.capGest;
+  if(v.salDir==null && (v.salG!=null||v.salC!=null)) v.salDir=Math.round(((v.salG??v.salC)+(v.salC??v.salG))/2);
+  delete v.capGest; delete v.capCom; delete v.maxCarga; delete v.salG; delete v.salC;
+  return v;
+}
+function migratePhase(p){
+  const q={...p};
+  if(!q.salDir && (q.salG||q.salC)) q.salDir=q.salG||q.salC;
+  delete q.salG; delete q.salC;
+  return q;
+}
 function applySnapshot(s){
   if(!s) return;
-  if(s.V) V={...DEF, ...s.V};
+  if(s.V) V={...DEF, ...migrateV(s.V)};
   if(s.GRAN) GRAN=s.GRAN;
   if(typeof s.YF==='number') YF=s.YF;
   if(s.HY){ HY=s.HY; HM=HY*12; if(YF>HY) YF=0; }
-  if(s.PHASE && typeof s.PHASE==='object') PHASE=s.PHASE;
+  if(s.PHASE && typeof s.PHASE==='object') PHASE=migratePhase(s.PHASE);
   if(Array.isArray(s.CMP_SEL)) CMP_SEL=new Set(s.CMP_SEL);
   if(s.ACTIVE_TAB) ACTIVE_TAB=(s.ACTIVE_TAB==='notes')?'dash':s.ACTIVE_TAB;
+  if(s.SCOPE && ['all','auto','mre'].includes(s.SCOPE)) SCOPE=s.SCOPE;
 }
 function saveState(){ try{ localStorage.setItem(LS_STATE, JSON.stringify(snapshot())); }catch(e){} }
 function loadState(){ try{ return JSON.parse(localStorage.getItem(LS_STATE)); }catch(e){ return null; } }
@@ -848,20 +899,23 @@ applySnapshot(loadState());
   if(h){ const json=decodeURIComponent(escape(atob(decodeURIComponent(h[1])))); applySnapshot(JSON.parse(json)); }
 }catch(e){} })();
 
-function compute(v){
-  const N=HM;
+// NM = nº de meses a simular; por defecto el horizonte del plan. El cálculo del techo de
+// facturación reutiliza esta misma función con un horizonte largo.
+function compute(v,NM){
+  const N=NM||HM;
   const f=k=>v[k]/100;
-  const WIN={}; PHASE_KEYS.forEach(([k])=>WIN[k]=phaseWin(k));  // ventanas de activación de partidas
+  const WIN={}; PHASE_KEYS.forEach(([k])=>WIN[k]=phaseWin(k,N));  // ventanas de activación de partidas
   const rmA=Math.pow(f('retAuto'),1/12), rmM=Math.pow(f('retMre'),1/12);
   const primaNetaA=v.primaAuto*(1-f('ipsAuto')), primaNetaM=v.primaMre*(1-f('ipsMre'));
   const CpolA=primaNetaA*f('comAuto'), CpolM=primaNetaM*f('comMre');
   const A={new:[],cini:[],cfin:[],cnew:[],cren:[],inew:[],iren:[],itot:[],colab:[]};
   const M={new:[],cini:[],cfin:[],cnew:[],cren:[],inew:[],iren:[],itot:[],colab:[]};
-  const mon={a_inew:[],a_iren:[],ingA:[],m_inew:[],m_iren:[],ingM:[],itot:[],
-    dir:[],cNeed:[],gNeed:[],cdir:[],est:[],cest:[],sal:[],ss:[],psub:[],
+  const MKMON=()=>({a_inew:[],a_iren:[],ingA:[],m_inew:[],m_iren:[],ingM:[],itot:[],
+    dir:[],dNeed:[],cdir:[],est:[],cest:[],sal:[],ss:[],psub:[],
     alq:[],pue:[],sw:[],rc:[],ase:[],cuo:[],colab:[],otr:[],esub:[],gtot:[],
-    ebi:[],ebac:[],cart:[],newt:[],prim:[]};
-  let ebac=0;
+    ebi:[],ebac:[],cart:[],newt:[],prim:[]});
+  const mon=MKMON(), monA=MKMON(), monM=MKMON();   // global + un juego de cuentas por ramo
+  let ebac=0, ebacA=0, ebacM=0;
   for(let i=0;i<N;i++){
     const y=Math.floor(i/12), inf=Math.pow(1+f('infl'),y);
     const opsA=v.opsAuto*Math.pow(1+f('gAuto'),i);
@@ -882,45 +936,71 @@ function compute(v){
     M.colab[i]=f('colabMre')*(f('retroMreNew')*M.inew[i]+f('retroMreRen')*M.iren[i]);
     const itot=A.itot[i]+M.itot[i], cart=A.cfin[i]+M.cfin[i], newt=A.new[i]+M.new[i];
     const prim=A.cfin[i]*v.primaAuto+M.cfin[i]*v.primaMre;
-    // personal polivalente: una persona puede vender Y gestionar (se suma la carga fraccionada)
-    const gNeed=cart/v.capGest, cNeed=newt/v.capCom, dNeed=gNeed+cNeed;
-    const dir=Math.max(1,Math.ceil(dNeed/(v.maxCarga/100)));                  // plantilla: se contrata cuando se supera la carga máxima por persona
-    const bSal= dNeed>0? (gNeed*v.salG+cNeed*v.salC)/dNeed : v.salG;        // salario medio ponderado (informativo)
+    // plantilla polivalente: un único parámetro de capacidad (pólizas por empleado)
+    const dNeed=cart/v.polEmp;                                              // carga teórica en empleados equivalentes (FTE)
+    const dir=Math.max(1,Math.ceil(dNeed));                                 // plantilla real: se incorpora a la siguiente persona al llenarse el puesto
     const est= dir>=v.estThreshold? Math.max(1,Math.ceil(dir/v.estRatio)) : 0; // sin estructura hasta el umbral
     const moS=i+1;                                                          // cada sueldo tiene su propia ventana de meses
-    const onG=moS>=WIN.salG.from&&moS<=WIN.salG.to, onC=moS>=WIN.salC.from&&moS<=WIN.salC.to, onE=moS>=WIN.salE.from&&moS<=WIN.salE.to;
-    let cdir;
-    if(dNeed>0){ const scale=dir/dNeed; cdir=((onG?gNeed*v.salG:0)+(onC?cNeed*v.salC:0))*scale*inf; } // cdir se reparte gestión/venta, cada parte con su ventana
-    else { cdir= onG? dir*v.salG*inf : 0; }
+    const onD=moS>=WIN.salDir.from&&moS<=WIN.salDir.to, onE=moS>=WIN.salE.from&&moS<=WIN.salE.to;
+    const cdir= onD? dir*v.salDir*inf : 0;
     let cest= onE? est*v.salE*inf : 0;                                      // inflación SOLO en salarios
     const sal=cdir+cest, ss=sal*f('ss'), psub=sal+ss;
-    let alq=v.alq, pue=(dir+est)*v.puesto, sw=(v.swbase+(dir+est)*v.swemp);
+    let alq=v.alq, pue=(dir+est)*v.puesto, swB=v.swbase, swV=(dir+est)*v.swemp;
     let rc=v.rcbase/12 + f('rcpct')*itot, ase=v.ases, cuo=v.cuotas; const colab=A.colab[i]+M.colab[i]; // parte variable RC sobre facturación mensual
     const mo=i+1;  // mes (1-based) para el calendario de partidas
     if(mo<WIN.alq.from||mo>WIN.alq.to) alq=0;
     if(mo<WIN.pue.from||mo>WIN.pue.to) pue=0;
-    if(mo<WIN.sw.from ||mo>WIN.sw.to ) sw=0;
+    if(mo<WIN.sw.from ||mo>WIN.sw.to ){ swB=0; swV=0; }
     if(mo<WIN.rc.from ||mo>WIN.rc.to ) rc=0;
     if(mo<WIN.ase.from||mo>WIN.ase.to) ase=0;
     if(mo<WIN.cuo.from||mo>WIN.cuo.to) cuo=0;
+    const sw=swB+swV;
     const otr=f('otros')*(psub+alq+pue+sw+rc+ase+cuo);
     const esub=alq+pue+sw+rc+ase+cuo+colab+otr, gtot=psub+esub, ebi=itot-gtot;
     ebac+=ebi;
     mon.a_inew[i]=A.inew[i]; mon.a_iren[i]=A.iren[i]; mon.ingA[i]=A.itot[i];
     mon.m_inew[i]=M.inew[i]; mon.m_iren[i]=M.iren[i]; mon.ingM[i]=M.itot[i]; mon.itot[i]=itot;
-    mon.dir[i]=dir; mon.cNeed[i]=cNeed; mon.gNeed[i]=gNeed; mon.cdir[i]=cdir; mon.est[i]=est; mon.cest[i]=cest;
+    mon.dir[i]=dir; mon.dNeed[i]=dNeed; mon.cdir[i]=cdir; mon.est[i]=est; mon.cest[i]=cest;
     mon.sal[i]=sal; mon.ss[i]=ss; mon.psub[i]=psub;
     mon.alq[i]=alq; mon.pue[i]=pue; mon.sw[i]=sw; mon.rc[i]=rc; mon.ase[i]=ase; mon.cuo[i]=cuo;
     mon.colab[i]=colab; mon.otr[i]=otr; mon.esub[i]=esub; mon.gtot[i]=gtot;
     mon.ebi[i]=ebi; mon.ebac[i]=ebac; mon.cart[i]=cart; mon.newt[i]=newt; mon.prim[i]=prim;
+
+    /* ---- economics por ramo ----
+       La comisión y la retrocesión son directas de cada ramo. Los costes compartidos se reparten
+       con dos claves, y la suma de los dos ramos reproduce exactamente la cuenta global:
+         · por CARTERA  → todo lo que escala con la plantilla (personal, puesto, licencias),
+                          porque la plantilla la fija la cartera en vigor;
+         · por COMISIÓN → los costes fijos y los ligados a la facturación (alquiler, plataforma,
+                          RC, asesoría, cuotas).                                                   */
+    const kcA= cart? A.cfin[i]/cart : 0.5, kiA= itot? A.itot[i]/itot : kcA;
+    const split=(mx,X,kc,ki,primaX,isAuto)=>{
+      const alqX=alq*ki, pueX=pue*kc, swX=swB*ki+swV*kc, rcX=rc*ki, aseX=ase*ki, cuoX=cuo*ki;
+      const cdirX=cdir*kc, cestX=cest*kc, salX=cdirX+cestX, ssX=salX*f('ss'), psubX=salX+ssX;
+      const colabX=X.colab[i];
+      const otrX=f('otros')*(psubX+alqX+pueX+swX+rcX+aseX+cuoX);
+      const esubX=alqX+pueX+swX+rcX+aseX+cuoX+colabX+otrX, gtotX=psubX+esubX, ebiX=X.itot[i]-gtotX;
+      mx.a_inew[i]= isAuto?X.inew[i]:0; mx.a_iren[i]= isAuto?X.iren[i]:0; mx.ingA[i]= isAuto?X.itot[i]:0;
+      mx.m_inew[i]= isAuto?0:X.inew[i]; mx.m_iren[i]= isAuto?0:X.iren[i]; mx.ingM[i]= isAuto?0:X.itot[i];
+      mx.itot[i]=X.itot[i]; mx.cart[i]=X.cfin[i]; mx.newt[i]=X.new[i]; mx.prim[i]=X.cfin[i]*primaX;
+      mx.dir[i]=dir*kc; mx.dNeed[i]=dNeed*kc; mx.est[i]=est*kc;
+      mx.cdir[i]=cdirX; mx.cest[i]=cestX; mx.sal[i]=salX; mx.ss[i]=ssX; mx.psub[i]=psubX;
+      mx.alq[i]=alqX; mx.pue[i]=pueX; mx.sw[i]=swX; mx.rc[i]=rcX; mx.ase[i]=aseX; mx.cuo[i]=cuoX;
+      mx.colab[i]=colabX; mx.otr[i]=otrX; mx.esub[i]=esubX; mx.gtot[i]=gtotX; mx.ebi[i]=ebiX;
+      return ebiX;
+    };
+    ebacA+=split(monA,A,kcA,kiA,v.primaAuto,true);   monA.ebac[i]=ebacA;
+    ebacM+=split(monM,M,1-kcA,1-kiA,v.primaMre,false); monM.ebac[i]=ebacM;
   }
-  let beM=mon.ebi.findIndex(x=>x>0), beAcc=mon.ebac.findIndex(x=>x>0);
-  return {mon,beM:beM<0?null:beM+1,beAcc:beAcc<0?null:beAcc+1,cartBE:beM<0?null:mon.cart[beM]};
+  const be=m=>{ const i=m.ebi.findIndex(x=>x>0); return i<0?null:i+1; };
+  const beM=be(mon), beAcc=mon.ebac.findIndex(x=>x>0);
+  return {mon,monA,monM,beM,beAcc:beAcc<0?null:beAcc+1,cartBE:beM?mon.cart[beM-1]:null,
+    beA:be(monA),beMre:be(monM)};
 }
 
 const FLOW=['a_inew','a_iren','ingA','m_inew','m_iren','ingM','itot',
   'cdir','cest','sal','ss','psub','alq','pue','sw','rc','ase','cuo','colab','otr','esub','gtot','ebi','newt'];
-const STOCK=['ebac','cart','dir','cNeed','gNeed','est','prim'];
+const STOCK=['ebac','cart','dir','dNeed','est','prim'];
 function bucketize(mon,gran,yf){
   const step= gran==='mes'?1: gran==='tri'?3:12;
   const start= yf>0?(yf-1)*12:0, end= yf>0?yf*12:HM;
@@ -946,6 +1026,47 @@ function totalCol(mon,yf){
   return vals;
 }
 
+/* ===== Techo de facturación: hasta dónde llega el escenario y cuánto tarda =====
+   Con captación constante la cartera satura: cada mes entran pólizas nuevas y se cae un
+   porcentaje de las que ya están. El equilibrio llega cuando ambas cosas se igualan, y
+   ahí la facturación deja de crecer. Ese es el techo del escenario.
+     cartera_∞ = altas al mes ÷ (1 − retención mensual)
+   Si la captación crece mes a mes (crecimiento > 0), no hay techo: el modelo compone
+   indefinidamente, y en ese caso se informa del máximo alcanzado dentro del horizonte.  */
+const CEIL_CAP_M=12*100;   // tope de búsqueda del tiempo hasta el techo: 100 años
+const CEIL_MARKS=[0.90,0.95,0.99];
+function ceilingCalc(v){
+  const f=k=>v[k]/100;
+  const rmA=Math.pow(f('retAuto'),1/12), rmM=Math.pow(f('retMre'),1/12);
+  const CpolA=v.primaAuto*(1-f('ipsAuto'))*f('comAuto');
+  const CpolM=v.primaMre*(1-f('ipsMre'))*f('comMre');
+  const growing= v.gAuto>0 || v.gMre>0;
+  const nA=v.opsAuto*f('captAuto');                       // altas de auto al mes (constantes)
+  const cA= rmA<1? nA/(1-rmA) : Infinity;                 // cartera de auto en saturación
+  const nM= cA*f('crossMre')/12 + v.propMre;              // altas de MRE al mes en régimen
+  const cM= rmM<1? nM/(1-rmM) : Infinity;
+  const mk=(cart,cpol,prima)=>({cart,fact:cart*cpol,prim:cart*prima});
+  const cap={auto:mk(cA,CpolA,v.primaAuto), mre:mk(cM,CpolM,v.primaMre)};
+  cap.all={cart:cA+cM, fact:cap.auto.fact+cap.mre.fact, prim:cap.auto.prim+cap.mre.prim};
+  // meses hasta cada % del techo: se recorre la cartera mes a mes (sin costes, es barato)
+  const hit={auto:{},mre:{},all:{}};
+  if(!growing && isFinite(cap.all.fact) && cap.all.fact>0){
+    let a=0,m=0;
+    for(let i=1;i<=CEIL_CAP_M;i++){
+      const aPrev=a;
+      a=aPrev*rmA+nA;
+      m=m*rmM+(aPrev*f('crossMre')/12+v.propMre);
+      const fa=a*CpolA, fm=m*CpolM;
+      CEIL_MARKS.forEach(k=>{
+        if(hit.auto[k]==null && cap.auto.fact>0 && fa>=k*cap.auto.fact) hit.auto[k]=i;
+        if(hit.mre[k]==null  && cap.mre.fact >0 && fm>=k*cap.mre.fact ) hit.mre[k]=i;
+        if(hit.all[k]==null  && fa+fm>=k*cap.all.fact) hit.all[k]=i;
+      });
+      if(CEIL_MARKS.every(k=>hit.all[k]!=null&&(cap.auto.fact<=0||hit.auto[k]!=null)&&(cap.mre.fact<=0||hit.mre[k]!=null))) break;
+    }
+  }
+  return {growing,cap,hit};
+}
 const escAttr=s=>s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const eur=x=>Math.round(x).toLocaleString('es-ES')+' €';
 const eur2=x=>x.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
@@ -968,10 +1089,9 @@ const LINES=[
  {key:'itot',label:'TOTAL INGRESOS',fmt:eur,cls:'tot',help:'Total Auto + Total Multirriesgo Empresas.'},
  {sec:'GASTOS — PERSONAL (plantilla)'},
  {key:'sal',label:'Salarios brutos (total plantilla)',fmt:eur,cls:'st',help:'Coste bruto de gestión directa + estructura. Pulsa para plegar/desplegar el detalle.'},
- {key:'dir',label:'Gestión directa (venta + gestión) · nº personas',fmt:num0,sub:1,help:'Personal polivalente que vende Y gestiona pólizas. Se suma la dedicación a venta (pólizas nuevas/mes ÷ capacidad de venta) y a gestión (cartera ÷ capacidad de gestión) y se divide entre la carga máxima por persona, redondeando al alza (mínimo 1). Así una persona puede estirarse algo antes de incorporar a la siguiente; el trabajo se reparte entre todo el equipo. Debajo se desglosa la dedicación equivalente (FTE) a venta y a gestión.'},
- {key:'cNeed',label:'Comerciales (venta) · FTE',fmt:num1,sub:1,help:'Dedicación equivalente a tiempo completo a la VENTA = pólizas nuevas/mes ÷ capacidad de venta por comercial. Es fraccional: junto con los gestores se redondea al alza para obtener la plantilla real de gestión directa.'},
- {key:'gNeed',label:'Gestores de cartera · FTE',fmt:num1,sub:1,help:'Dedicación equivalente a tiempo completo a la GESTIÓN de cartera = cartera en vigor ÷ capacidad de gestión por persona. Es fraccional; suma con los comerciales para dar la plantilla de gestión directa.'},
- {key:'cdir',label:'Gestión directa · coste bruto',fmt:eur,sub:1,help:'nº de personas de gestión directa × salario medio (ponderado por la mezcla venta/gestión) × inflación de salarios.'},
+ {key:'dir',label:'Gestión directa (venta + gestión) · nº personas',fmt:num0,sub:1,help:'Personal polivalente que vende Y gestiona pólizas. Se obtiene dividiendo la cartera en vigor entre las pólizas por empleado y redondeando al alza (mínimo 1 persona). El trabajo se reparte entre todo el equipo. Debajo se muestra la carga sin redondear (FTE).'},
+ {key:'dNeed',label:'Carga de trabajo · FTE',fmt:num1,sub:1,help:'Carga equivalente a tiempo completo = cartera en vigor ÷ pólizas por empleado. Es fraccional; se redondea al alza para obtener la plantilla real de gestión directa.'},
+ {key:'cdir',label:'Gestión directa · coste bruto',fmt:eur,sub:1,help:'nº de personas de gestión directa × salario bruto por empleado × inflación de salarios.'},
  {key:'est',label:'Estructura · nº personas',fmt:num0,sub:1,help:'0 hasta alcanzar el umbral de empleados de gestión directa; a partir de ahí, redondeo al alza de (gestión directa ÷ ratio por estructura), mínimo 1. Umbral y ratio editables en el panel lateral.'},
  {key:'cest',label:'Estructura · coste bruto',fmt:eur,sub:1,help:'nº de estructura × salario bruto estructura × inflación de salarios.'},
  {key:'ss',label:'Seguridad Social',fmt:eur,sub:1,help:'Salarios brutos × % de Seguridad Social a cargo de la empresa.'},
@@ -1003,7 +1123,7 @@ const CHARTS={
  margen:{title:'Margen EBITDA',mode:'line',yfmt:'pct',zero:true,series:[['Margen','#1f9d57',b=>b.vals.margin]]},
 };
 
-const SUBGROUPS={ingA:['a_inew','a_iren'],ingM:['m_inew','m_iren'],sal:['dir','cNeed','gNeed','cdir','est','cest'],esub:['alq','pue','sw','rc','ase','cuo','colab','otr']};
+const SUBGROUPS={ingA:['a_inew','a_iren'],ingM:['m_inew','m_iren'],sal:['dir','dNeed','cdir','est','cest'],esub:['alq','pue','sw','rc','ase','cuo','colab','otr']};
 const CHILD2PAR={}; Object.keys(SUBGROUPS).forEach(p=>SUBGROUPS[p].forEach(c=>CHILD2PAR[c]=p));
 const SECOF={}; { let s=null; LINES.forEach(L=>{ if(L.sec) s=L.sec; else SECOF[L.key]=s; }); }
 const colSec=new Set(), colSub=new Set(), EMPTY=new Set();
@@ -1103,30 +1223,81 @@ function ueHTML(R,opt){
   <div class="ue-note">Pacc (nº1 corredurías independientes de capital español): 145,3 M€ de primas intermediadas, 17,2 M€ de comisiones, EBITDA 15,8% y 127 empleados. Opera un <b>modelo de franquicia</b>: su red produce y da servicio, por eso retrocede ~60% de la comisión. Fuentes: dossier corporativo y cuentas (Registro Mercantil / eInforma).</div>`;
 }
 
+/* ---- ámbitos del dashboard: el negocio completo y cada ramo por separado ---- */
+const SCOPES={
+  all :{label:'Todo el negocio', of:'del negocio',
+        hint:'Auto y Multirriesgo Empresas sumados: la cuenta completa de la correduría.',
+        mon:R=>R.mon,  be:R=>R.beM,   cap:C=>C.cap.all,  hit:C=>C.hit.all},
+  auto:{label:'Auto', of:'de Auto',
+        hint:'Solo el ramo de Auto. Los costes compartidos se le imputan por su peso en cartera (personal y puesto) y en comisión (costes fijos).',
+        mon:R=>R.monA, be:R=>R.beA,   cap:C=>C.cap.auto, hit:C=>C.hit.auto},
+  mre :{label:'Multirriesgo Empresas', of:'de Multirriesgo Empresas',
+        hint:'Solo el ramo de Multirriesgo Empresas. Los costes compartidos se le imputan por su peso en cartera (personal y puesto) y en comisión (costes fijos).',
+        mon:R=>R.monM, be:R=>R.beMre, cap:C=>C.cap.mre,  hit:C=>C.hit.mre},
+};
+// el gráfico de mezcla por vertical no tiene sentido dentro de un único ramo
+const chartKeysFor=s=> Object.keys(CHARTS).filter(k=> s==='all' || k!=='vert');
+
+function ceilPanelHTML(scope,C,monS){
+  const S=SCOPES[scope], cap=S.cap(C), hit=S.hit(C);
+  const nowRR=(monS.itot[HM-1]||0)*12;   // facturación anual al ritmo del último mes del plan
+  const head=`<div class="cl-h">Techo de facturación · ${S.label}</div>`;
+  if(C.growing) return head+`<div class="cl-legend"><b>Este escenario no tiene techo.</b> Al crecer la captación mes a mes de forma compuesta (${num1(V.gAuto)}% en Auto, ${num1(V.gMre)}% en la producción propia de MRE), la cartera nunca llega a saturarse y la facturación sigue subiendo indefinidamente.</div>
+    <div class="cl-marks" style="margin-top:10px">Lo máximo que alcanzas dentro del horizonte del plan es <b>${eur(nowRR)}</b> al año, al ritmo del mes ${HM} (fin del Año ${HY}).</div>
+    <div class="cl-note">Pon los dos crecimientos mensuales a 0 para ver hasta dónde llega el negocio con una captación estable: es ahí donde la cartera satura y aparece el techo.</div>`;
+  if(!isFinite(cap.fact)||cap.fact<=0) return head+`<div class="cl-legend">Sin captación en este ramo no hay facturación que proyectar.</div>`;
+  const pctNow=Math.max(0,Math.min(1,nowRR/cap.fact));
+  const t95=hit[0.95];
+  // los hitos que caen fuera del plan se atenúan, en vez de repetir el aviso en cada uno
+  const fmtHit=k=>{const m=hit[k]; const p=Math.round(k*100);
+    if(m==null) return `<span class="out">${p}% → más de 100 años</span>`;
+    return `<span class="${m>HM?'out':''}">${p}% → <b>mes ${m}</b> (Año ${Math.floor((m-1)/12)+1})</span>`;};
+  return head+`<div class="cl-grid">
+      <div class="cl-big"><div class="k">Facturación máxima</div><div class="v">${eur(cap.fact)}</div>
+        <div class="s">comisión al año con la cartera ${S.of} saturada</div></div>
+      <div class="cl-big"><div class="k">Tiempo hasta el techo</div>
+        <div class="v">${t95!=null? ('Año '+(Math.floor((t95-1)/12)+1)+' · mes '+t95) : 'más de 100 años'}</div>
+        <div class="s">en llegar al 95% del techo${t95!=null&&t95>HM?` — más allá de los ${HY} años del plan`:''}</div></div>
+    </div>
+    <div class="cl-bar"><span style="width:${(pctNow*100).toFixed(1)}%"></span></div>
+    <div class="cl-legend">Al final del Año ${HY} facturas <b>${eur(nowRR)}</b> al año: el <b>${pct(pctNow)}</b> del techo.</div>
+    <div class="cl-marks">Hitos: ${CEIL_MARKS.map(fmtHit).join(' &nbsp;·&nbsp; ')} <span class="out">— atenuados, los que caen fuera del plan de ${HY} años</span></div>
+    <div class="cl-note">La cartera satura cuando las altas de cada mes igualan a las bajas. Con una retención anual ${scope==='mre'?('del '+num1(V.retMre)+'%'):scope==='auto'?('del '+num1(V.retAuto)+'%'):('del '+num1(V.retAuto)+'% en Auto y del '+num1(V.retMre)+'% en MRE')}, ese equilibrio está en <b>${eur0(cap.cart)} pólizas</b> y <b>${eur(cap.prim)}</b> de primas en gestión. El acercamiento es asintótico: el último tramo es el más lento, por eso pasar del 95% al 99% cuesta casi tanto como llegar al 95%.</div>`;
+}
+
 function render(){
   const R=compute(V);
-  const tot=totalCol(R.mon,YF);
+  const C=ceilingCalc(V);
+  const S=SCOPES[SCOPE]||SCOPES.all;
+  const monS=S.mon(R), beS=S.be(R);
+  const cartBE= beS? monS.cart[beS-1] : null;
+  const tot=totalCol(monS,YF);
   const perLabel= YF? ('Año '+YF) : (HY+' años');
   const e=tot.ebi;
+  document.getElementById('scopeHint').textContent=S.hint;
+  const empSuffix= SCOPE==='all'? 'gestores + estructura' : 'parte imputada a este ramo';
   document.getElementById('kpis').innerHTML=`
    <div class="kpi"><div class="k">Ingresos · ${perLabel}</div><div class="v">${eur0(tot.itot)}€</div><div class="s">comisión del periodo</div></div>
    <div class="kpi"><div class="k">EBITDA · ${perLabel}</div><div class="v ${e>=0?'pos':'neg'}">${eur0(e)}€</div><div class="s">Margen ${pct(tot.margin)}</div></div>
    <div class="kpi"><div class="k">Cartera fin · ${perLabel}</div><div class="v">${eur0(tot.cart)}</div><div class="s">pólizas en vigor</div></div>
    <div class="kpi"><div class="k">Prima en gestión · ${perLabel}</div><div class="v">${eur0(tot.prim)}€</div><div class="s">primas en vigor a fin de periodo</div></div>
-   <div class="kpi"><div class="k">Empleados · ${perLabel}</div><div class="v">${num0((tot.dir||0)+(tot.est||0))}</div><div class="s">gestores + estructura</div></div>
-   <div class="kpi"><div class="k">Break-even (global)</div><div class="v ${R.beM?'pos':'neg'}">${R.beM?('Mes '+R.beM):('>'+HM+'m')}</div><div class="s">${R.beM?('cartera ≈ '+eur0(R.cartBE)+' pólizas'):('no en '+HY+' años')}</div></div>`;
-  document.getElementById('be').innerHTML = R.beM
-    ? `<b>Punto de equilibrio:</b> el EBITDA mensual se vuelve positivo en el <b>mes ${R.beM}</b> (cartera ≈ ${eur0(R.cartBE)} pólizas). El EBITDA acumulado pasa a positivo ${R.beAcc?('en el mes '+R.beAcc):('fuera de los '+HM+' meses')}.`
-    : `<b>Punto de equilibrio:</b> con estos supuestos el negocio <b>no alcanza break-even mensual en ${HM} meses</b>. Sube captación/comisión, reduce retrocesión o aumenta la capacidad por gestor.`;
+   <div class="kpi"><div class="k">Empleados · ${perLabel}</div><div class="v">${SCOPE==='all'?num0((tot.dir||0)+(tot.est||0)):num1((tot.dir||0)+(tot.est||0))}</div><div class="s">${empSuffix}</div></div>
+   <div class="kpi"><div class="k">Break-even · ${S.label}</div><div class="v ${beS?'pos':'neg'}">${beS?('Mes '+beS):('>'+HM+'m')}</div><div class="s">${beS?('cartera ≈ '+eur0(cartBE)+' pólizas'):('no en '+HY+' años')}</div></div>`;
+  document.getElementById('be').innerHTML = beS
+    ? `<b>Punto de equilibrio ${S.of}:</b> el EBITDA mensual se vuelve positivo en el <b>mes ${beS}</b> (cartera ≈ ${eur0(cartBE)} pólizas).${SCOPE==='all'?` El EBITDA acumulado pasa a positivo ${R.beAcc?('en el mes '+R.beAcc):('fuera de los '+HM+' meses')}.`:''}`
+    : `<b>Punto de equilibrio ${S.of}:</b> con estos supuestos <b>no se alcanza break-even mensual en ${HM} meses</b>. Sube captación/comisión, reduce retrocesión o sube las pólizas por empleado.`;
+  document.getElementById('ceil').innerHTML=ceilPanelHTML(SCOPE,C,monS);
 
   document.getElementById('ueTitle').textContent=`Unit economics · ${perLabel}`;
   document.getElementById('ue').innerHTML=ueHTML(R);
-  const buckets=bucketize(R.mon,GRAN,YF);
+  const buckets=bucketize(monS,GRAN,YF);
   const gl={mes:'mes',tri:'trimestre','año':'año'}[GRAN];
-  document.getElementById('chartsNote').textContent=`Mostrando ${perLabel} por ${gl}.`;
-  document.getElementById('tbl').innerHTML=plTable(buckets,tot,{icons:true});
+  document.getElementById('chartsNote').textContent=`Mostrando ${perLabel} por ${gl} · ${S.label}.`;
+  // la cuenta de resultados detallada es siempre la del negocio completo
+  const totG=totalCol(R.mon,YF);
+  document.getElementById('tbl').innerHTML=plTable(bucketize(R.mon,GRAN,YF),totG,{icons:true});
   document.getElementById('note').textContent=`Mostrando ${perLabel} agrupado por ${gl}. Flujo (ingresos, gastos, EBITDA, pólizas nuevas) sumado en el periodo; stock (cartera, EBITDA acumulado, nº gestores) a fin de periodo. El break-even se calcula siempre sobre los ${HM} meses.`;
-  renderChartsGrid(buckets);
+  renderChartsGrid(buckets,chartKeysFor(SCOPE));
   if(document.getElementById('tab-comp').style.display!=='none') renderComp();
   saveState();
 }
@@ -1198,14 +1369,15 @@ function drawOneChart(key,buckets,hover){
   const leg=document.querySelector(`.legend[data-for="${key}"]`); if(leg) leg.innerHTML=legendHTML(S);
   CHART_STATE[key]={buckets,hover:(hover==null?null:hover),geo:{W,mode,n:buckets.length}};
 }
-function renderChartsGrid(buckets){
+function renderChartsGrid(buckets,keys){
   const grid=document.getElementById('dashCharts'); if(!grid) return;
-  grid.innerHTML=Object.keys(CHARTS).map(key=>
+  keys=keys||Object.keys(CHARTS);
+  grid.innerHTML=keys.map(key=>
     `<div class="panel chart-card"><h2>${CHARTS[key].title}</h2>`+
     `<div class="chartbox"><canvas data-charttype="${key}"></canvas></div>`+
     `<div class="legend" data-for="${key}"></div></div>`
   ).join('');
-  Object.keys(CHARTS).forEach(key=>{
+  keys.forEach(key=>{
     drawOneChart(key,buckets,null);
     const cv=grid.querySelector(`canvas[data-charttype="${key}"]`);
     cv.addEventListener('mousemove',e=>{
@@ -1280,6 +1452,13 @@ document.getElementById('selYear').addEventListener('change',e=>{ YF=parseInt(e.
 document.getElementById('selHorizon').addEventListener('change',e=>{
   HY=parseInt(e.target.value); HM=HY*12; if(YF>HY) YF=0; buildYearOptions(); render();
 });
+document.getElementById('segScope').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return; SCOPE=e.target.dataset.s;
+  [...e.currentTarget.children].forEach(b=>b.classList.toggle('on',b===e.target)); render();
+});
+function syncScopeSeg(){
+  document.querySelectorAll('#segScope button').forEach(b=>b.classList.toggle('on',b.dataset.s===SCOPE));
+}
 document.getElementById('segGran').addEventListener('click',e=>{
   if(e.target.tagName!=='BUTTON')return; GRAN=e.target.dataset.g;
   [...e.currentTarget.children].forEach(b=>b.classList.toggle('on',b===e.target)); render();
@@ -2987,7 +3166,7 @@ function buildModelSheets(){
   // ---- Motor MENSUAL (meses en filas, métricas en columnas) ----
   const ORDER=['mes','anio','inf','opsA','a_new','a_cini','a_cfin','a_cnew','a_cren','a_inew','a_iren','a_itot','a_colab',
     'xs','m_new','m_cini','m_cfin','m_cnew','m_cren','m_inew','m_iren','m_itot','m_colab',
-    'itot','cart','newt','prim','gNeed','cNeed','dNeed','dir','bSal','est','cdir','cest','sal','ss','psub',
+    'itot','cart','newt','prim','dNeed','dir','est','cdir','cest','sal','ss','psub',
     'alq','pue','sw','rc','ase','cuo','colab','otr','esub','gtot','ebi','ebac','margin','beEbi','beEbac'];
   const HEAD={mes:'Mes',anio:'Año',inf:'Inflación (factor)',opsA:'Auto · operaciones/mes',a_new:'Auto · pólizas nuevas',
     a_cini:'Auto · cartera inicio',a_cfin:'Auto · cartera fin',a_cnew:'Auto · cartera nueva',a_cren:'Auto · cartera renov.',
@@ -2995,8 +3174,8 @@ function buildModelSheets(){
     xs:'MRE · cross-sell',m_new:'MRE · pólizas nuevas',m_cini:'MRE · cartera inicio',m_cfin:'MRE · cartera fin',
     m_cnew:'MRE · cartera nueva',m_cren:'MRE · cartera renov.',m_inew:'MRE · ingreso nuevo',m_iren:'MRE · ingreso renov.',
     m_itot:'MRE · ingreso total',m_colab:'MRE · comisión colab.',itot:'Ingresos totales',cart:'Cartera total',newt:'Pólizas nuevas',
-    prim:'Primas intermediadas',gNeed:'FTE gestión (teórico)',cNeed:'FTE venta (teórico)',dNeed:'FTE directa (teórico)',
-    dir:'Gestión directa (nº)',bSal:'Salario medio directa',est:'Estructura (nº)',cdir:'Coste gestión directa',cest:'Coste estructura',
+    prim:'Primas intermediadas',dNeed:'Carga de trabajo (FTE)',
+    dir:'Gestión directa (nº)',est:'Estructura (nº)',cdir:'Coste gestión directa',cest:'Coste estructura',
     sal:'Salarios brutos',ss:'Seguridad Social',psub:'Subtotal personal',alq:'Alquiler y oficina',pue:'Suministros/puesto',
     sw:'Software y CRM',rc:'RC y seguros',ase:'Asesoría/gestoría',cuo:'Cuotas DGSFP',colab:'Comisión colaboradores',
     otr:'Otros e imprevistos',esub:'Subtotal estructura',gtot:'TOTAL GASTOS',ebi:'EBITDA',ebac:'EBITDA acumulado',
@@ -3037,13 +3216,10 @@ function buildModelSheets(){
     cell.cart=F(`${C.a_cfin}${R}+${C.m_cfin}${R}`);
     cell.newt=F(`${C.a_new}${R}+${C.m_new}${R}`);
     cell.prim=F(`${C.a_cfin}${R}*${P.primaAuto}+${C.m_cfin}${R}*${P.primaMre}`);
-    cell.gNeed=F(`${C.cart}${R}/${P.capGest}`);
-    cell.cNeed=F(`${C.newt}${R}/${P.capCom}`);
-    cell.dNeed=F(`${C.gNeed}${R}+${C.cNeed}${R}`);
-    cell.dir=F(`MAX(1,ROUNDUP(${C.dNeed}${R}/(${P.maxCarga}/100),0))`);
-    cell.bSal=F(`IF(${C.dNeed}${R}>0,(${C.gNeed}${R}*${P.salG}+${C.cNeed}${R}*${P.salC})/${C.dNeed}${R},${P.salG})`);
+    cell.dNeed=F(`${C.cart}${R}/${P.polEmp}`);
+    cell.dir=F(`MAX(1,ROUNDUP(${C.dNeed}${R},0))`);
     cell.est=F(`IF(${C.dir}${R}>=${P.estThreshold},MAX(1,ROUNDUP(${C.dir}${R}/${P.estRatio},0)),0)`);
-    cell.cdir=F(`IF(${C.dNeed}${R}>0,(IF(AND(${C.mes}${R}>=${P.salG_from},${C.mes}${R}<=${P.salG_to}),${C.gNeed}${R}*${P.salG},0)+IF(AND(${C.mes}${R}>=${P.salC_from},${C.mes}${R}<=${P.salC_to}),${C.cNeed}${R}*${P.salC},0))*${C.dir}${R}/${C.dNeed}${R},IF(AND(${C.mes}${R}>=${P.salG_from},${C.mes}${R}<=${P.salG_to}),${C.dir}${R}*${P.salG},0))*${C.inf}${R}`);
+    cell.cdir=F(`IF(AND(${C.mes}${R}>=${P.salDir_from},${C.mes}${R}<=${P.salDir_to}),${C.dir}${R}*${P.salDir}*${C.inf}${R},0)`);
     cell.cest=F(`IF(AND(${C.mes}${R}>=${P.salE_from},${C.mes}${R}<=${P.salE_to}),${C.est}${R}*${P.salE}*${C.inf}${R},0)`);
     cell.sal=F(`${C.cdir}${R}+${C.cest}${R}`);
     cell.ss=F(`${C.sal}${R}*${P.ss}/100`);
@@ -3072,7 +3248,7 @@ function buildModelSheets(){
   const eRange=(key,r1,r2)=>`'${SH_MON}'!${C[key]}${r1}:${C[key]}${r2}`;
   // mapa clave de LÍNEA del P&L -> clave de columna del motor
   const KC={newt:'newt',cart:'cart',prim:'prim',ingA:'a_itot',a_inew:'a_inew',a_iren:'a_iren',
-    ingM:'m_itot',m_inew:'m_inew',m_iren:'m_iren',itot:'itot',sal:'sal',dir:'dir',cNeed:'cNeed',gNeed:'gNeed',cdir:'cdir',est:'est',cest:'cest',
+    ingM:'m_itot',m_inew:'m_inew',m_iren:'m_iren',itot:'itot',sal:'sal',dir:'dir',dNeed:'dNeed',cdir:'cdir',est:'est',cest:'cest',
     ss:'ss',psub:'psub',esub:'esub',alq:'alq',pue:'pue',sw:'sw',rc:'rc',ase:'ase',cuo:'cuo',colab:'colab',otr:'otr',
     gtot:'gtot',ebi:'ebi',margin:'margin',ebac:'ebac'};
   const STOCKK=new Set(STOCK);                         // claves de stock (valor a fin de periodo)
@@ -3184,6 +3360,7 @@ function syncControls(){
   buildYearOptions();
   document.getElementById('selYear').value=String(YF);
   [...document.getElementById('segGran').children].forEach(b=>b.classList.toggle('on',b.dataset.g===GRAN));
+  syncScopeSeg();
   syncPhaseControls();
   render();
 }
@@ -3316,6 +3493,7 @@ window.addEventListener('resize',()=>render());
 // sincroniza topbar con el estado restaurado al iniciar
 document.getElementById('selHorizon').value=String(HY);
 [...document.getElementById('segGran').children].forEach(b=>b.classList.toggle('on',b.dataset.g===GRAN));
+syncScopeSeg();
 refreshPresetSel('');
 render();
 activateTab(ACTIVE_TAB,false);
