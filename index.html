@@ -111,11 +111,21 @@
   .ctrl-chev{font-size:10px;color:var(--muted-foreground);transition:transform .25s ease}
   .ctrlbtn.on .ctrl-chev{transform:rotate(180deg)}
   /* truco de grid 0fr → 1fr: anima sin necesidad de saber la altura */
-  #ctrlWrap{display:grid;grid-template-rows:0fr;background:var(--bg);
-    border-bottom:1px solid transparent;transition:grid-template-rows .28s ease,border-color .28s ease}
-  #ctrlWrap.on{grid-template-rows:1fr;border-bottom-color:var(--border)}
+  /* vive dentro del dashboard, justo bajo el selector de ramo */
+  #ctrlWrap{display:grid;grid-template-rows:0fr;background:transparent;
+    transition:grid-template-rows .28s ease}
+  #ctrlWrap.on{grid-template-rows:1fr}
   .ctrl-inner{overflow:hidden;min-height:0}
-  .controls{margin:20px 20px 0;padding:20px;max-height:min(72vh,780px);overflow:auto}
+  .controls{margin:0;padding:20px;max-height:min(72vh,780px);overflow:auto}
+  /* con el ámbito en un ramo concreto solo se ven sus parámetros y los comunes se ocultan */
+  #form .acc-item[hidden]{display:none}
+  /* al quedar un único grupo, sus parámetros se reparten en dos columnas en vez de una tira larga */
+  @media(min-width:900px){
+    #form.one-group .acc-body{columns:2;column-gap:26px}
+    #form.one-group .acc-body>*{break-inside:avoid;-webkit-column-break-inside:avoid}
+  }
+  .ctrl-scope{font-size:12px;color:var(--muted-foreground);margin:0 0 14px;padding:9px 12px;
+    border:1px solid var(--border);border-radius:var(--radius);background:var(--muted-bg)}
   .controls::-webkit-scrollbar{width:9px}
   .controls::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px}
   .controls::-webkit-scrollbar-track{background:transparent}
@@ -168,24 +178,26 @@
   .scopebar .seg button{padding:6px 14px;font-size:12.5px}
   .scopehint{font-size:12px;color:var(--muted-foreground);flex:1 1 220px;min-width:0}
 
-  /* ===== techo de facturación ===== */
-  .ceilpanel{padding:18px 20px}
-  .cl-h{font-size:12.5px;font-weight:600;color:var(--muted-foreground);margin-bottom:14px}
-  .cl-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-  @media(max-width:680px){.cl-grid{grid-template-columns:1fr}}
-  .cl-big .k{font-size:12.5px;font-weight:500;color:var(--muted-foreground)}
-  .cl-big .v{font-size:26px;font-weight:700;letter-spacing:-.02em;margin-top:5px;font-variant-numeric:tabular-nums}
-  .cl-big .s{font-size:11.5px;color:var(--muted-foreground);margin-top:4px}
+  /* ===== techo de facturación: una tarjeta por idea ===== */
+  #ceil{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+  @media(max-width:1100px){#ceil{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:560px){#ceil{grid-template-columns:1fr}}
+  .cl-card{padding:18px 20px;display:flex;flex-direction:column;min-width:0}
+  .cl-card.cl-wide{grid-column:1/-1}
+  .cl-card.cl-soft{background:var(--muted-bg)}
+  .cl-card .k{font-size:12.5px;font-weight:500;color:var(--muted-foreground)}
+  .cl-card .v{font-size:26px;font-weight:700;letter-spacing:-.02em;margin-top:5px;
+    font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cl-card .s{font-size:11.5px;color:var(--muted-foreground);margin-top:auto;padding-top:8px;line-height:1.55}
   .cl-bar{height:8px;border-radius:999px;background:var(--muted-bg);border:1px solid var(--border);
-    overflow:hidden;margin:18px 0 9px}
+    overflow:hidden;margin:12px 0 0}
+  .cl-soft .cl-bar{background:var(--card)}
   .cl-bar span{display:block;height:100%;background:var(--primary);border-radius:999px}
-  .cl-legend{font-size:12.5px}
-  .cl-marks{font-size:12px;color:var(--muted-foreground);margin-top:7px;font-variant-numeric:tabular-nums}
-  .cl-marks b{color:var(--foreground);font-weight:600}
-  .cl-marks .out{opacity:.55}
-  .cl-marks .out b{color:var(--muted-foreground)}
-  .cl-note{font-size:11.5px;color:var(--muted-foreground);margin-top:12px;padding-top:12px;
-    border-top:1px solid var(--border);line-height:1.6}
+  .cl-rows{margin-top:9px;display:flex;flex-direction:column;gap:5px}
+  .cl-row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;
+    font-variant-numeric:tabular-nums}
+  .cl-row b{font-weight:600}
+  .cl-row.out{opacity:.5}
 
   /* ===== tablas ===== */
   .tblscroll{overflow-x:auto;width:100%;border:1px solid var(--border);border-radius:var(--radius);background:var(--card)}
@@ -612,48 +624,6 @@
     <button class="tab" data-tab="market">Mercado</button>
   </div>
 </div>
-<div id="ctrlWrap" aria-hidden="true">
-  <div class="ctrl-inner">
-  <div class="panel controls">
-    <div class="presetbar">
-      <div class="pl">Escenarios guardados</div>
-      <select id="presetSel"><option value="">— Sin escenario —</option></select>
-      <div class="presetbtns">
-        <button class="psave" id="presetSave">＋ Guardar escenario</button>
-        <button class="pdel" id="presetDel" title="Borrar escenario seleccionado">🗑</button>
-      </div>
-      <div class="presetbtns share3">
-        <button class="pshare" id="btnShare" title="Copiar un enlace con el escenario actual">🔗 Enlace</button>
-        <button class="pshare" id="btnExport" title="Descargar todos los escenarios a un archivo">⤓ Exportar</button>
-        <button class="pshare" id="btnImport" title="Cargar escenarios desde un archivo">⤒ Importar</button>
-      </div>
-      <button class="pmail" id="btnMail" title="Preparar un correo con el enlace, el JSON, el Excel y el PDF">✉ Compartir por correo</button>
-      <input type="file" id="fileImport" accept="application/json,.json" style="display:none">
-      <div id="mailBackdrop" class="mail-backdrop">
-        <div class="mail-modal">
-          <div class="mail-h">✉ Compartir por correo</div>
-          <p class="mail-p">Se abrirá un borrador en tu Gmail (<b>fredi.baques@gmail.com</b>) con un <b>enlace que ya incluye todos los datos del escenario actual</b>. El destinatario solo tiene que abrirlo y la herramienta se carga con estos mismos valores; si quiere, podrá descargar el PDF o el Excel desde la propia plataforma.</p>
-          <label class="mail-lab">Destinatario (opcional)</label>
-          <input id="mailTo" class="mail-in" type="email" placeholder="nombre@empresa.com">
-          <label class="mail-lab">Mensaje (opcional)</label>
-          <textarea id="mailMsg" class="mail-in" rows="2" placeholder="Añade una nota personal…"></textarea>
-          <ol class="mail-steps">
-            <li>Se abre Gmail con el asunto, el texto y el enlace ya puestos.</li>
-            <li>Pon el destinatario (si no lo has hecho aquí) y pulsa Enviar.</li>
-          </ol>
-          <div class="mail-btns">
-            <button id="mailCancel" class="mail-cancel">Cancelar</button>
-            <button id="mailGo" class="mail-go">Preparar y abrir Gmail</button>
-          </div>
-        </div>
-      </div>
-      <div class="saved-flash" id="savedFlash"></div>
-    </div>
-    <div id="form"></div>
-    <button class="reset" id="reset">Restablecer valores</button>
-  </div>
-  </div>
-</div>
 <div class="wrap">
   <div class="content">
     <div class="filterbar" id="filterbar">
@@ -698,9 +668,52 @@
         </span>
         <span class="scopehint" id="scopeHint"></span>
       </div>
+  <div id="ctrlWrap" aria-hidden="true">
+    <div class="ctrl-inner">
+    <div class="panel controls">
+      <div class="presetbar">
+        <div class="pl">Escenarios guardados</div>
+        <select id="presetSel"><option value="">— Sin escenario —</option></select>
+        <div class="presetbtns">
+          <button class="psave" id="presetSave">＋ Guardar escenario</button>
+          <button class="pdel" id="presetDel" title="Borrar escenario seleccionado">🗑</button>
+        </div>
+        <div class="presetbtns share3">
+          <button class="pshare" id="btnShare" title="Copiar un enlace con el escenario actual">🔗 Enlace</button>
+          <button class="pshare" id="btnExport" title="Descargar todos los escenarios a un archivo">⤓ Exportar</button>
+          <button class="pshare" id="btnImport" title="Cargar escenarios desde un archivo">⤒ Importar</button>
+        </div>
+        <button class="pmail" id="btnMail" title="Preparar un correo con el enlace, el JSON, el Excel y el PDF">✉ Compartir por correo</button>
+        <input type="file" id="fileImport" accept="application/json,.json" style="display:none">
+        <div id="mailBackdrop" class="mail-backdrop">
+          <div class="mail-modal">
+            <div class="mail-h">✉ Compartir por correo</div>
+            <p class="mail-p">Se abrirá un borrador en tu Gmail (<b>fredi.baques@gmail.com</b>) con un <b>enlace que ya incluye todos los datos del escenario actual</b>. El destinatario solo tiene que abrirlo y la herramienta se carga con estos mismos valores; si quiere, podrá descargar el PDF o el Excel desde la propia plataforma.</p>
+            <label class="mail-lab">Destinatario (opcional)</label>
+            <input id="mailTo" class="mail-in" type="email" placeholder="nombre@empresa.com">
+            <label class="mail-lab">Mensaje (opcional)</label>
+            <textarea id="mailMsg" class="mail-in" rows="2" placeholder="Añade una nota personal…"></textarea>
+            <ol class="mail-steps">
+              <li>Se abre Gmail con el asunto, el texto y el enlace ya puestos.</li>
+              <li>Pon el destinatario (si no lo has hecho aquí) y pulsa Enviar.</li>
+            </ol>
+            <div class="mail-btns">
+              <button id="mailCancel" class="mail-cancel">Cancelar</button>
+              <button id="mailGo" class="mail-go">Preparar y abrir Gmail</button>
+            </div>
+          </div>
+        </div>
+        <div class="saved-flash" id="savedFlash"></div>
+      </div>
+      <p class="ctrl-scope" id="ctrlScope"></p>
+      <div id="form"></div>
+      <button class="reset" id="reset">Restablecer valores</button>
+    </div>
+    </div>
+  </div>
       <div class="kpis" id="kpis"></div>
       <div class="be" id="be"></div>
-      <div class="panel ceilpanel" id="ceil"></div>
+      <div id="ceil"></div>
       <p class="note" id="chartsNote" style="margin:0"></p>
       <div class="charts-grid" id="dashCharts"></div>
     </div>
@@ -768,11 +781,13 @@
 const DEF = {
   opsAuto:2800, gAuto:0, captAuto:5, primaAuto:450, ipsAuto:8, comAuto:11, retAuto:88, colabAuto:100, retroAutoNew:30, retroAutoRen:30,
   crossMre:2, propMre:8, gMre:0, primaMre:700, ipsMre:8, comMre:20, retMre:87, colabMre:0, retroMreNew:0, retroMreRen:0,
-  polEmp:1200, estRatio:8, estThreshold:4, salDir:2100, salE:3500, ss:31.5,
+  polEmpAuto:1200, salDirAuto:2100, polEmpMre:1200, salDirMre:2100, ss:31.5,
   alq:1200, puesto:150, swbase:300, swemp:80, rcbase:3000, rcpct:0.10, ases:350, cuotas:100, otros:5, infl:3
 };
+// Cada grupo declara su ámbito: el panel de parámetros muestra solo los del ramo que se
+// está viendo en el dashboard ('common' = costes compartidos, visibles en Todo el negocio).
 const CFG = [
- ['AUTO','grp-auto',[
+ ['AUTO','grp-auto','auto',[
    ['opsAuto','Transferencias de vehículos / mes','num',null,'expedientes de la gestoría → leads de auto','Operaciones de transferencia de vehículos que tramita la gestoría cada mes. Son la fuente de clientes potenciales: una parte (la tasa de captación) se convierte en póliza de auto.'],
    ['gAuto','Crecimiento mensual del flujo','pct',[0,3,0.25],'compuesto mes a mes','Ritmo al que crece cada mes el número de transferencias. Se aplica de forma compuesta (cada mes sobre el anterior).'],
    ['captAuto','Tasa de captación sobre el flujo','pct',[0,30,0.5],'% de transferencias que acaban en póliza','De cada 100 transferencias tramitadas, cuántas terminan contratando una póliza de auto.'],
@@ -783,8 +798,10 @@ const CFG = [
    ['colabAuto','% pólizas vía colaborador','pct',[0,100,5],'aportadas por un agente externo','Porcentaje de pólizas aportadas por un colaborador (agente o introductor externo) a cambio de cederle parte de la comisión, lo que se llama retrocesión.'],
    ['retroAutoNew','% retrocesión · nueva producción','pct',[0,60,1],'sobre la comisión de pólizas nuevas','Retrocesión = parte de la comisión que se cede al colaborador. Aquí, sobre las pólizas nuevas que aporta.'],
    ['retroAutoRen','% retrocesión · renovaciones','pct',[0,60,1],'sobre la comisión de renovaciones','Parte de la comisión de las renovaciones que se cede al colaborador año tras año.'],
+   ['polEmpAuto','Pólizas por empleado · Auto','num',[200,12000,100],'capacidad de un empleado dedicado a Auto','Cuántas pólizas de Auto puede llevar un empleado a tiempo completo: venderlas, administrarlas, atenderlas y renovarlas. La plantilla de Auto = cartera de Auto ÷ este número, redondeando al alza. Auto suele admitir muchas más pólizas por persona que Multirriesgo: son operaciones más estandarizadas.'],
+   ['salDirAuto','Salario bruto por empleado · Auto (€/mes)','eur',null,'plantilla especializada en Auto','Salario bruto mensual de una persona dedicada a Auto.'],
  ]],
- ['MULTIRRIESGO EMPRESAS','grp-mre',[
+ ['MULTIRRIESGO EMPRESAS','grp-mre','mre',[
    ['crossMre','Venta cruzada anual sobre cartera auto','pct',[0,20,0.5],'% de clientes auto que cada año contratan un MRE','Venta cruzada (cross-sell): porcentaje de la cartera de auto que cada año contrata además un seguro multirriesgo de empresa.'],
    ['propMre','Producción propia (pólizas/mes)','num',null,'venta directa, no procede de la cartera auto','Pólizas de multirriesgo captadas directamente por la correduría cada mes, al margen de la venta cruzada sobre la cartera de auto.'],
    ['gMre','Crecimiento mensual prod. propia','pct',[0,3,0.25],'compuesto mes a mes','Ritmo de crecimiento mensual (compuesto) de la producción propia de multirriesgo.'],
@@ -795,16 +812,14 @@ const CFG = [
    ['colabMre','% pólizas vía colaborador','pct',[0,100,5],'aportadas por un agente externo','Porcentaje de pólizas de multirriesgo aportadas por un colaborador externo a cambio de retrocesión.'],
    ['retroMreNew','% retrocesión · nueva producción','pct',[0,60,1],'sobre la comisión de pólizas nuevas','Parte de la comisión de las pólizas nuevas de multirriesgo que se cede al colaborador.'],
    ['retroMreRen','% retrocesión · renovaciones','pct',[0,60,1],'sobre la comisión de renovaciones','Parte de la comisión de las renovaciones de multirriesgo que se cede al colaborador.'],
+   ['polEmpMre','Pólizas por empleado · MRE','num',[200,12000,100],'capacidad de un empleado dedicado a Multirriesgo','Cuántas pólizas de Multirriesgo Empresas puede llevar un empleado a tiempo completo. La plantilla de MRE = cartera de MRE ÷ este número, redondeando al alza. Suele ser bastante menor que en Auto: son riesgos a medida, con más análisis y más trato con el cliente.'],
+   ['salDirMre','Salario bruto por empleado · MRE (€/mes)','eur',null,'plantilla especializada en Multirriesgo','Salario bruto mensual de una persona dedicada a Multirriesgo Empresas. Suele estar por encima del de Auto por el perfil técnico que exige.'],
  ]],
- ['PERSONAL (polivalente al inicio)','grp-per',[
-   ['polEmp','Pólizas por empleado','num',[200,12000,100],'único parámetro de capacidad: vender + gestionar','Cuántas pólizas puede llevar un empleado a tiempo completo: venderlas, administrarlas, atenderlas y renovarlas. Es el único parámetro de capacidad del modelo. La plantilla de gestión directa = cartera en vigor ÷ este número, redondeando al alza (mínimo 1 persona). Súbelo si tu operativa está muy automatizada; bájalo si das un servicio muy personal.'],
-   ['estThreshold','Plantilla directa para crear estructura','num',[1,12,1],'sin mandos ni soporte por debajo de este nº','«Estructura» = mandos intermedios y soporte no productivo (coordinación, administración). No se crea hasta alcanzar este número de personas de gestión directa.'],
-   ['estRatio','Gestión directa por cada persona de estructura','num',[2,20,1],'1 de estructura por cada X de gestión directa','Cuántas personas de gestión directa sostiene cada persona de estructura. Un ratio de 8 = 1 mando o soporte por cada 8 productivos.'],
-   ['salDir','Salario bruto por empleado (€/mes)','eur',null,'plantilla polivalente: vende y gestiona','Salario bruto mensual de una persona de gestión directa. En el modelo polivalente la misma persona vende y gestiona, por eso hay un único sueldo para toda la plantilla productiva.'],
-   ['salE','Salario bruto · estructura (€/mes)','eur',null,'mandos y soporte no productivo','Salario bruto mensual de una persona de estructura (mandos intermedios o soporte).'],
-   ['ss','Seguridad Social sobre bruto','pct',[0,40,0.5],'cotización a cargo de la empresa','Cotización a la Seguridad Social que paga la empresa, como porcentaje del salario bruto.'],
+ ['PERSONAL Y COSTES COMUNES','grp-per','common',[
+   ['ss','Seguridad Social sobre bruto','pct',[0,40,0.5],'cotización a cargo de la empresa','Cotización a la Seguridad Social que paga la empresa, como porcentaje del salario bruto. Se aplica a los sueldos de los dos ramos.'],
+   ['infl','Inflación anual de salarios','pct',[0,10,0.25],'solo afecta a los sueldos','Subida anual aplicada únicamente a los salarios de ambos ramos; el resto de gastos no se inflaciona en el modelo.'],
  ]],
- ['GASTOS GENERALES Y SEGUROS','grp-gen',[
+ ['GASTOS GENERALES Y SEGUROS','grp-gen','common',[
    ['alq','Alquiler y oficina base (€/mes)','eur',null,'coste fijo, no escala con la plantilla','Alquiler y gastos de oficina base. Coste fijo que no depende del número de empleados.'],
    ['puesto','Coste puesto por empleado (€/mes)','eur',null,'puesto físico y equipamiento, no software','Coste del puesto físico por empleado: mobiliario, suministros, equipamiento. No incluye software (eso va en Tecnología).'],
    ['swbase','Tecnología (coste fijo) (€/mes)','eur',null,'plataforma/core fijo, independiente de la plantilla','Software base del negocio (plataforma de correduría, web, integraciones con compañías…). Coste fijo, igual con 1 o con 20 empleados.'],
@@ -814,7 +829,6 @@ const CFG = [
    ['ases','Asesoría/auditoría/gestoría (€/mes)','eur',null,'coste mensual de servicios externos','Coste mensual de asesoría contable y fiscal, auditoría y gestoría.'],
    ['cuotas','Cuotas DGSFP (regulador) y colegio (€/mes)','eur',null,'tasas del regulador de seguros y del colegio','Cuotas a la DGSFP (Dirección General de Seguros y Fondos de Pensiones, el regulador de seguros) y al colegio de mediadores.'],
    ['otros','Otros e imprevistos (% sobre gastos)','pct',[0,15,0.5],'colchón sobre el resto de gastos','Margen para gastos no previstos, como porcentaje del resto de gastos (personal y estructura, sin contar la comisión a colaboradores).'],
-   ['infl','Inflación anual de salarios','pct',[0,10,0.25],'solo afecta a los sueldos','Subida anual aplicada únicamente a los salarios; el resto de gastos no se inflaciona en el modelo.'],
  ]],
 ];
 let V = {...DEF};
@@ -825,13 +839,13 @@ let PHASE={};  // { clave: {on:bool, from:int, to:int} }   to=0 => hasta el fina
 let CMP_SEL=null;  // Set de claves de competidores seleccionados; se inicializa tras definir BENCH
 let ACTIVE_TAB='dash';  // pestaña activa; se restaura al refrescar
 let SCOPE='all';        // ámbito del dashboard: 'all' | 'auto' | 'mre'
-const PHASE_KEYS=[['salDir','Sueldo plantilla'],['salE','Sueldo estructura'],['alq','Alquiler y oficina'],['pue','Suministros / puesto'],['sw','Software y CRM'],['rc','RC y seguros'],['ase','Asesoría / gestoría'],['cuo','Cuotas DGSFP']];
+const PHASE_KEYS=[['salDirAuto','Sueldo plantilla Auto'],['salDirMre','Sueldo plantilla MRE'],['alq','Alquiler y oficina'],['pue','Suministros / puesto'],['sw','Software y CRM'],['rc','RC y seguros'],['ase','Asesoría / gestoría'],['cuo','Cuotas DGSFP']];
 // N = horizonte sobre el que se resuelve la ventana (por defecto el del plan; la proyección
 // a largo plazo del techo de facturación pasa el suyo para que los costes no se corten)
 function phaseWin(key,N){ N=N||HM; const p=PHASE[key]; if(!p||!p.on) return {from:1,to:N}; return {from:Math.max(1,p.from||1), to:(p.to&&p.to>0)?Math.min(p.to,N):N}; }
 // calendario integrado en el panel lateral: bajo qué parámetro aparece cada coste faseable
-const PHASE_ANCHOR={salDir:'salDir', salE:'salE', alq:'alq', puesto:'pue', swbase:'sw', rcbase:'rc', ases:'ase', cuotas:'cuo'};
-const PHASE_SCOPE={salDir:'afecta al sueldo de la plantilla directa (y su parte de SS)', salE:'afecta al sueldo de estructura (y su parte de SS)', sw:'afecta a toda la tecnología (fijo + variable)', rc:'afecta al seguro RC completo'};
+const PHASE_ANCHOR={salDirAuto:'salDirAuto', salDirMre:'salDirMre', alq:'alq', puesto:'pue', swbase:'sw', rcbase:'rc', ases:'ase', cuotas:'cuo'};
+const PHASE_SCOPE={salDirAuto:'afecta al sueldo de la plantilla de Auto (y su parte de SS)', salDirMre:'afecta al sueldo de la plantilla de MRE (y su parte de SS)', sw:'afecta a toda la tecnología (fijo + variable)', rc:'afecta al seguro RC completo'};
 const PHASE_APPLY={};
 function makePhaseRow(pk){
   const wrap=document.createElement('div'); wrap.className='phinline';
@@ -862,19 +876,27 @@ function syncPhaseControls(){
 /* ---- persistencia y escenarios (localStorage) ---- */
 const LS_STATE='cbp_state_v1', LS_PRESETS='cbp_presets_v1';
 function snapshot(){ return {V:{...V}, GRAN, YF, HY, PHASE:JSON.parse(JSON.stringify(PHASE)), CMP_SEL: CMP_SEL?[...CMP_SEL]:null, ACTIVE_TAB, SCOPE}; }
-// escenarios guardados antes de la simplificación traían tres parámetros de capacidad
-// (capGest/capCom/maxCarga) y dos sueldos de plantilla (salG/salC); se reducen a polEmp y salDir
+/* Migración de escenarios guardados. Dos saltos acumulados:
+   1) capGest/capCom/maxCarga → polEmp, y salG/salC → salDir (plantilla polivalente única)
+   2) polEmp/salDir → un juego por ramo (polEmpAuto/Mre, salDirAuto/Mre), y desaparece la
+      capa de estructura (estThreshold/estRatio/salE), que ya no se tiene en cuenta.       */
 function migrateV(o){
   const v={...o};
   if(v.polEmp==null && v.capGest!=null) v.polEmp=v.capGest;
   if(v.salDir==null && (v.salG!=null||v.salC!=null)) v.salDir=Math.round(((v.salG??v.salC)+(v.salC??v.salG))/2);
-  delete v.capGest; delete v.capCom; delete v.maxCarga; delete v.salG; delete v.salC;
+  if(v.polEmpAuto==null && v.polEmp!=null) v.polEmpAuto=v.polEmp;
+  if(v.polEmpMre ==null && v.polEmp!=null) v.polEmpMre =v.polEmp;
+  if(v.salDirAuto==null && v.salDir!=null) v.salDirAuto=v.salDir;
+  if(v.salDirMre ==null && v.salDir!=null) v.salDirMre =v.salDir;
+  ['capGest','capCom','maxCarga','salG','salC','polEmp','salDir','estThreshold','estRatio','salE'].forEach(k=>delete v[k]);
   return v;
 }
 function migratePhase(p){
   const q={...p};
   if(!q.salDir && (q.salG||q.salC)) q.salDir=q.salG||q.salC;
-  delete q.salG; delete q.salC;
+  if(!q.salDirAuto && q.salDir) q.salDirAuto={...q.salDir};
+  if(!q.salDirMre  && q.salDir) q.salDirMre ={...q.salDir};
+  ['salG','salC','salDir','salE'].forEach(k=>delete q[k]);
   return q;
 }
 function applySnapshot(s){
@@ -911,7 +933,7 @@ function compute(v,NM){
   const A={new:[],cini:[],cfin:[],cnew:[],cren:[],inew:[],iren:[],itot:[],colab:[]};
   const M={new:[],cini:[],cfin:[],cnew:[],cren:[],inew:[],iren:[],itot:[],colab:[]};
   const MKMON=()=>({a_inew:[],a_iren:[],ingA:[],m_inew:[],m_iren:[],ingM:[],itot:[],
-    dir:[],dNeed:[],cdir:[],est:[],cest:[],sal:[],ss:[],psub:[],
+    dir:[],dirA:[],dirM:[],dNeed:[],cdir:[],sal:[],ss:[],psub:[],
     alq:[],pue:[],sw:[],rc:[],ase:[],cuo:[],colab:[],otr:[],esub:[],gtot:[],
     ebi:[],ebac:[],cart:[],newt:[],prim:[]});
   const mon=MKMON(), monA=MKMON(), monM=MKMON();   // global + un juego de cuentas por ramo
@@ -936,16 +958,19 @@ function compute(v,NM){
     M.colab[i]=f('colabMre')*(f('retroMreNew')*M.inew[i]+f('retroMreRen')*M.iren[i]);
     const itot=A.itot[i]+M.itot[i], cart=A.cfin[i]+M.cfin[i], newt=A.new[i]+M.new[i];
     const prim=A.cfin[i]*v.primaAuto+M.cfin[i]*v.primaMre;
-    // plantilla polivalente: un único parámetro de capacidad (pólizas por empleado)
-    const dNeed=cart/v.polEmp;                                              // carga teórica en empleados equivalentes (FTE)
-    const dir=Math.max(1,Math.ceil(dNeed));                                 // plantilla real: se incorpora a la siguiente persona al llenarse el puesto
-    const est= dir>=v.estThreshold? Math.max(1,Math.ceil(dir/v.estRatio)) : 0; // sin estructura hasta el umbral
+    /* plantilla especializada por ramo: cada uno tiene su propia capacidad y su propio sueldo.
+       Un ramo sin cartera no consume plantilla; en cuanto tiene cartera, al menos una persona. */
+    const dNeedA=A.cfin[i]/v.polEmpAuto, dNeedM=M.cfin[i]/v.polEmpMre;      // carga teórica en FTE
+    const dirA= A.cfin[i]>0? Math.max(1,Math.ceil(dNeedA)) : 0;
+    const dirM= M.cfin[i]>0? Math.max(1,Math.ceil(dNeedM)) : 0;
+    const dNeed=dNeedA+dNeedM, dir=dirA+dirM;
     const moS=i+1;                                                          // cada sueldo tiene su propia ventana de meses
-    const onD=moS>=WIN.salDir.from&&moS<=WIN.salDir.to, onE=moS>=WIN.salE.from&&moS<=WIN.salE.to;
-    const cdir= onD? dir*v.salDir*inf : 0;
-    let cest= onE? est*v.salE*inf : 0;                                      // inflación SOLO en salarios
-    const sal=cdir+cest, ss=sal*f('ss'), psub=sal+ss;
-    let alq=v.alq, pue=(dir+est)*v.puesto, swB=v.swbase, swV=(dir+est)*v.swemp;
+    const onA=moS>=WIN.salDirAuto.from&&moS<=WIN.salDirAuto.to, onM=moS>=WIN.salDirMre.from&&moS<=WIN.salDirMre.to;
+    const cdirA= onA? dirA*v.salDirAuto*inf : 0;                            // inflación SOLO en salarios
+    const cdirM= onM? dirM*v.salDirMre *inf : 0;
+    const cdir=cdirA+cdirM;
+    const sal=cdir, ss=sal*f('ss'), psub=sal+ss;
+    let alq=v.alq, pue=dir*v.puesto, swB=v.swbase, swV=dir*v.swemp;
     let rc=v.rcbase/12 + f('rcpct')*itot, ase=v.ases, cuo=v.cuotas; const colab=A.colab[i]+M.colab[i]; // parte variable RC sobre facturación mensual
     const mo=i+1;  // mes (1-based) para el calendario de partidas
     if(mo<WIN.alq.from||mo>WIN.alq.to) alq=0;
@@ -960,37 +985,40 @@ function compute(v,NM){
     ebac+=ebi;
     mon.a_inew[i]=A.inew[i]; mon.a_iren[i]=A.iren[i]; mon.ingA[i]=A.itot[i];
     mon.m_inew[i]=M.inew[i]; mon.m_iren[i]=M.iren[i]; mon.ingM[i]=M.itot[i]; mon.itot[i]=itot;
-    mon.dir[i]=dir; mon.dNeed[i]=dNeed; mon.cdir[i]=cdir; mon.est[i]=est; mon.cest[i]=cest;
+    mon.dir[i]=dir; mon.dirA[i]=dirA; mon.dirM[i]=dirM; mon.dNeed[i]=dNeed; mon.cdir[i]=cdir;
     mon.sal[i]=sal; mon.ss[i]=ss; mon.psub[i]=psub;
     mon.alq[i]=alq; mon.pue[i]=pue; mon.sw[i]=sw; mon.rc[i]=rc; mon.ase[i]=ase; mon.cuo[i]=cuo;
     mon.colab[i]=colab; mon.otr[i]=otr; mon.esub[i]=esub; mon.gtot[i]=gtot;
     mon.ebi[i]=ebi; mon.ebac[i]=ebac; mon.cart[i]=cart; mon.newt[i]=newt; mon.prim[i]=prim;
 
     /* ---- economics por ramo ----
-       La comisión y la retrocesión son directas de cada ramo. Los costes compartidos se reparten
-       con dos claves, y la suma de los dos ramos reproduce exactamente la cuenta global:
-         · por CARTERA  → todo lo que escala con la plantilla (personal, puesto, licencias),
-                          porque la plantilla la fija la cartera en vigor;
-         · por COMISIÓN → los costes fijos y los ligados a la facturación (alquiler, plataforma,
-                          RC, asesoría, cuotas).                                                   */
-    const kcA= cart? A.cfin[i]/cart : 0.5, kiA= itot? A.itot[i]/itot : kcA;
-    const split=(mx,X,kc,ki,primaX,isAuto)=>{
-      const alqX=alq*ki, pueX=pue*kc, swX=swB*ki+swV*kc, rcX=rc*ki, aseX=ase*ki, cuoX=cuo*ki;
-      const cdirX=cdir*kc, cestX=cest*kc, salX=cdirX+cestX, ssX=salX*f('ss'), psubX=salX+ssX;
+       Con la plantilla especializada, casi todo el coste es ya directo de cada ramo:
+         · DIRECTOS   → comisión, retrocesión, sueldos y SS de su propia plantilla, y el puesto
+                        y las licencias de esa gente (van con el nº de personas del ramo);
+         · REPARTIDOS → solo lo que de verdad se comparte (alquiler, plataforma, RC, asesoría,
+                        cuotas), imputado por el peso de cada ramo en la comisión.
+       La suma de los dos ramos reproduce exactamente la cuenta global.                        */
+    const kiA= itot? A.itot[i]/itot : (cart? A.cfin[i]/cart : 0.5);
+    const split=(mx,X,dirX,cdirX,ki,primaX,isAuto)=>{
+      const kp= dir? dirX/dir : 0;                                          // peso en plantilla
+      const alqX=alq*ki, rcX=rc*ki, aseX=ase*ki, cuoX=cuo*ki;
+      const pueX=pue*kp, swX=swB*ki+swV*kp;
+      const salX=cdirX, ssX=salX*f('ss'), psubX=salX+ssX;
       const colabX=X.colab[i];
       const otrX=f('otros')*(psubX+alqX+pueX+swX+rcX+aseX+cuoX);
       const esubX=alqX+pueX+swX+rcX+aseX+cuoX+colabX+otrX, gtotX=psubX+esubX, ebiX=X.itot[i]-gtotX;
       mx.a_inew[i]= isAuto?X.inew[i]:0; mx.a_iren[i]= isAuto?X.iren[i]:0; mx.ingA[i]= isAuto?X.itot[i]:0;
       mx.m_inew[i]= isAuto?0:X.inew[i]; mx.m_iren[i]= isAuto?0:X.iren[i]; mx.ingM[i]= isAuto?0:X.itot[i];
       mx.itot[i]=X.itot[i]; mx.cart[i]=X.cfin[i]; mx.newt[i]=X.new[i]; mx.prim[i]=X.cfin[i]*primaX;
-      mx.dir[i]=dir*kc; mx.dNeed[i]=dNeed*kc; mx.est[i]=est*kc;
-      mx.cdir[i]=cdirX; mx.cest[i]=cestX; mx.sal[i]=salX; mx.ss[i]=ssX; mx.psub[i]=psubX;
+      mx.dir[i]=dirX; mx.dirA[i]= isAuto?dirX:0; mx.dirM[i]= isAuto?0:dirX;
+      mx.dNeed[i]= isAuto?dNeedA:dNeedM;
+      mx.cdir[i]=cdirX; mx.sal[i]=salX; mx.ss[i]=ssX; mx.psub[i]=psubX;
       mx.alq[i]=alqX; mx.pue[i]=pueX; mx.sw[i]=swX; mx.rc[i]=rcX; mx.ase[i]=aseX; mx.cuo[i]=cuoX;
       mx.colab[i]=colabX; mx.otr[i]=otrX; mx.esub[i]=esubX; mx.gtot[i]=gtotX; mx.ebi[i]=ebiX;
       return ebiX;
     };
-    ebacA+=split(monA,A,kcA,kiA,v.primaAuto,true);   monA.ebac[i]=ebacA;
-    ebacM+=split(monM,M,1-kcA,1-kiA,v.primaMre,false); monM.ebac[i]=ebacM;
+    ebacA+=split(monA,A,dirA,cdirA,kiA,v.primaAuto,true);      monA.ebac[i]=ebacA;
+    ebacM+=split(monM,M,dirM,cdirM,1-kiA,v.primaMre,false);    monM.ebac[i]=ebacM;
   }
   const be=m=>{ const i=m.ebi.findIndex(x=>x>0); return i<0?null:i+1; };
   const beM=be(mon), beAcc=mon.ebac.findIndex(x=>x>0);
@@ -999,8 +1027,8 @@ function compute(v,NM){
 }
 
 const FLOW=['a_inew','a_iren','ingA','m_inew','m_iren','ingM','itot',
-  'cdir','cest','sal','ss','psub','alq','pue','sw','rc','ase','cuo','colab','otr','esub','gtot','ebi','newt'];
-const STOCK=['ebac','cart','dir','dNeed','est','prim'];
+  'cdir','sal','ss','psub','alq','pue','sw','rc','ase','cuo','colab','otr','esub','gtot','ebi','newt'];
+const STOCK=['ebac','cart','dir','dirA','dirM','dNeed','prim'];
 function bucketize(mon,gran,yf){
   const step= gran==='mes'?1: gran==='tri'?3:12;
   const start= yf>0?(yf-1)*12:0, end= yf>0?yf*12:HM;
@@ -1088,12 +1116,12 @@ const LINES=[
  {key:'m_iren',label:'MRE · renovaciones',fmt:eur,sub:1,help:'Pólizas de MRE renovadas (≥12 meses) × (prima × % comisión) ÷ 12.'},
  {key:'itot',label:'TOTAL INGRESOS',fmt:eur,cls:'tot',help:'Total Auto + Total Multirriesgo Empresas.'},
  {sec:'GASTOS — PERSONAL (plantilla)'},
- {key:'sal',label:'Salarios brutos (total plantilla)',fmt:eur,cls:'st',help:'Coste bruto de gestión directa + estructura. Pulsa para plegar/desplegar el detalle.'},
- {key:'dir',label:'Gestión directa (venta + gestión) · nº personas',fmt:num0,sub:1,help:'Personal polivalente que vende Y gestiona pólizas. Se obtiene dividiendo la cartera en vigor entre las pólizas por empleado y redondeando al alza (mínimo 1 persona). El trabajo se reparte entre todo el equipo. Debajo se muestra la carga sin redondear (FTE).'},
- {key:'dNeed',label:'Carga de trabajo · FTE',fmt:num1,sub:1,help:'Carga equivalente a tiempo completo = cartera en vigor ÷ pólizas por empleado. Es fraccional; se redondea al alza para obtener la plantilla real de gestión directa.'},
- {key:'cdir',label:'Gestión directa · coste bruto',fmt:eur,sub:1,help:'nº de personas de gestión directa × salario bruto por empleado × inflación de salarios.'},
- {key:'est',label:'Estructura · nº personas',fmt:num0,sub:1,help:'0 hasta alcanzar el umbral de empleados de gestión directa; a partir de ahí, redondeo al alza de (gestión directa ÷ ratio por estructura), mínimo 1. Umbral y ratio editables en el panel lateral.'},
- {key:'cest',label:'Estructura · coste bruto',fmt:eur,sub:1,help:'nº de estructura × salario bruto estructura × inflación de salarios.'},
+ {key:'sal',label:'Salarios brutos (total plantilla)',fmt:eur,cls:'st',help:'Coste bruto de las dos plantillas: la de Auto y la de Multirriesgo. Pulsa para plegar/desplegar el detalle.'},
+ {key:'dir',label:'Plantilla total · nº personas',fmt:num0,sub:1,help:'Suma de la plantilla de Auto y la de Multirriesgo. Cada ramo tiene su propia gente especializada: no se comparte entre verticales.'},
+ {key:'dirA',label:'Auto · nº personas',fmt:num0,sub:1,help:'Cartera de Auto ÷ pólizas por empleado de Auto, redondeando al alza (mínimo 1 en cuanto hay cartera).'},
+ {key:'dirM',label:'MRE · nº personas',fmt:num0,sub:1,help:'Cartera de Multirriesgo ÷ pólizas por empleado de MRE, redondeando al alza (mínimo 1 en cuanto hay cartera).'},
+ {key:'dNeed',label:'Carga de trabajo · FTE',fmt:num1,sub:1,help:'Carga equivalente a tiempo completo de los dos ramos sumada, sin redondear. Cada ramo se redondea al alza por separado, por eso este número queda por debajo de la plantilla real.'},
+ {key:'cdir',label:'Sueldos brutos · coste',fmt:eur,sub:1,help:'Plantilla de Auto × su salario + plantilla de MRE × el suyo, todo × inflación de salarios.'},
  {key:'ss',label:'Seguridad Social',fmt:eur,sub:1,help:'Salarios brutos × % de Seguridad Social a cargo de la empresa.'},
  {key:'psub',label:'Subtotal personal',fmt:eur,cls:'st',help:'Salarios brutos + Seguridad Social.'},
  {sec:'GASTOS — ESTRUCTURA Y GENERALES'},
@@ -1123,7 +1151,7 @@ const CHARTS={
  margen:{title:'Margen EBITDA',mode:'line',yfmt:'pct',zero:true,series:[['Margen','#1f9d57',b=>b.vals.margin]]},
 };
 
-const SUBGROUPS={ingA:['a_inew','a_iren'],ingM:['m_inew','m_iren'],sal:['dir','dNeed','cdir','est','cest'],esub:['alq','pue','sw','rc','ase','cuo','colab','otr']};
+const SUBGROUPS={ingA:['a_inew','a_iren'],ingM:['m_inew','m_iren'],sal:['dir','dirA','dirM','dNeed','cdir'],esub:['alq','pue','sw','rc','ase','cuo','colab','otr']};
 const CHILD2PAR={}; Object.keys(SUBGROUPS).forEach(p=>SUBGROUPS[p].forEach(c=>CHILD2PAR[c]=p));
 const SECOF={}; { let s=null; LINES.forEach(L=>{ if(L.sec) s=L.sec; else SECOF[L.key]=s; }); }
 const colSec=new Set(), colSub=new Set(), EMPTY=new Set();
@@ -1182,7 +1210,7 @@ function ueHTML(R,opt){
   const m=ve(V.primaMre*(1-V.ipsMre/100),V.comMre/100,V.retMre/100,V.colabMre/100,V.retroMreNew/100,V.retroMreRen/100);
   const neg=x=>`<span class="neg">${eur2(-x)}</span>`;
   // métricas comparables con benchmark Pacc (run-rate fin de periodo)
-  const hc=(R.mon.dir[li]||0)+(R.mon.est[li]||0);
+  const hc=R.mon.dir[li]||0;
   const annComm=R.mon.itot[li]*12;
   const comPrima= R.mon.prim[li]? annComm/R.mon.prim[li]:0;
   const retroEff= R.mon.itot[li]? R.mon.colab[li]/R.mon.itot[li]:0;
@@ -1229,10 +1257,10 @@ const SCOPES={
         hint:'Auto y Multirriesgo Empresas sumados: la cuenta completa de la correduría.',
         mon:R=>R.mon,  be:R=>R.beM,   cap:C=>C.cap.all,  hit:C=>C.hit.all},
   auto:{label:'Auto', of:'de Auto',
-        hint:'Solo el ramo de Auto. Los costes compartidos se le imputan por su peso en cartera (personal y puesto) y en comisión (costes fijos).',
+        hint:'Solo el ramo de Auto, con su plantilla propia. De los costes compartidos se le imputa la parte que le toca por su peso en comisión.',
         mon:R=>R.monA, be:R=>R.beA,   cap:C=>C.cap.auto, hit:C=>C.hit.auto},
   mre :{label:'Multirriesgo Empresas', of:'de Multirriesgo Empresas',
-        hint:'Solo el ramo de Multirriesgo Empresas. Los costes compartidos se le imputan por su peso en cartera (personal y puesto) y en comisión (costes fijos).',
+        hint:'Solo el ramo de Multirriesgo Empresas, con su plantilla propia. De los costes compartidos se le imputa la parte que le toca por su peso en comisión.',
         mon:R=>R.monM, be:R=>R.beMre, cap:C=>C.cap.mre,  hit:C=>C.hit.mre},
 };
 // el gráfico de mezcla por vertical no tiene sentido dentro de un único ramo
@@ -1241,28 +1269,32 @@ const chartKeysFor=s=> Object.keys(CHARTS).filter(k=> s==='all' || k!=='vert');
 function ceilPanelHTML(scope,C,monS){
   const S=SCOPES[scope], cap=S.cap(C), hit=S.hit(C);
   const nowRR=(monS.itot[HM-1]||0)*12;   // facturación anual al ritmo del último mes del plan
-  const head=`<div class="cl-h">Techo de facturación · ${S.label}</div>`;
-  if(C.growing) return head+`<div class="cl-legend"><b>Este escenario no tiene techo.</b> Al crecer la captación mes a mes de forma compuesta (${num1(V.gAuto)}% en Auto, ${num1(V.gMre)}% en la producción propia de MRE), la cartera nunca llega a saturarse y la facturación sigue subiendo indefinidamente.</div>
-    <div class="cl-marks" style="margin-top:10px">Lo máximo que alcanzas dentro del horizonte del plan es <b>${eur(nowRR)}</b> al año, al ritmo del mes ${HM} (fin del Año ${HY}).</div>
-    <div class="cl-note">Pon los dos crecimientos mensuales a 0 para ver hasta dónde llega el negocio con una captación estable: es ahí donde la cartera satura y aparece el techo.</div>`;
-  if(!isFinite(cap.fact)||cap.fact<=0) return head+`<div class="cl-legend">Sin captación en este ramo no hay facturación que proyectar.</div>`;
-  const pctNow=Math.max(0,Math.min(1,nowRR/cap.fact));
-  const t95=hit[0.95];
+  const card=(k,v,sub,cls)=>`<div class="panel cl-card${cls?' '+cls:''}"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
+  if(C.growing) return `<div class="panel cl-card cl-wide"><div class="k">Techo de facturación · ${S.label}</div>
+      <div class="v" style="font-size:20px">Este escenario no tiene techo</div>
+      <div class="s">Al crecer la captación mes a mes de forma compuesta (${num1(V.gAuto)}% en Auto, ${num1(V.gMre)}% en la producción propia de MRE), la cartera nunca satura y la facturación sigue subiendo indefinidamente. Lo máximo dentro del plan son <b>${eur(nowRR)}</b> al año, al ritmo del mes ${HM}. Pon los dos crecimientos a 0 para ver dónde estaría el techo.</div></div>`;
+  if(!isFinite(cap.fact)||cap.fact<=0) return `<div class="panel cl-card cl-wide"><div class="k">Techo de facturación · ${S.label}</div>
+      <div class="v" style="font-size:20px">Sin captación</div><div class="s">No hay facturación que proyectar en este ramo.</div></div>`;
+  const pctNow=Math.max(0,Math.min(1,nowRR/cap.fact)), t95=hit[0.95];
+  const yOf=m=>Math.floor((m-1)/12)+1;
   // los hitos que caen fuera del plan se atenúan, en vez de repetir el aviso en cada uno
-  const fmtHit=k=>{const m=hit[k]; const p=Math.round(k*100);
-    if(m==null) return `<span class="out">${p}% → más de 100 años</span>`;
-    return `<span class="${m>HM?'out':''}">${p}% → <b>mes ${m}</b> (Año ${Math.floor((m-1)/12)+1})</span>`;};
-  return head+`<div class="cl-grid">
-      <div class="cl-big"><div class="k">Facturación máxima</div><div class="v">${eur(cap.fact)}</div>
-        <div class="s">comisión al año con la cartera ${S.of} saturada</div></div>
-      <div class="cl-big"><div class="k">Tiempo hasta el techo</div>
-        <div class="v">${t95!=null? ('Año '+(Math.floor((t95-1)/12)+1)+' · mes '+t95) : 'más de 100 años'}</div>
-        <div class="s">en llegar al 95% del techo${t95!=null&&t95>HM?` — más allá de los ${HY} años del plan`:''}</div></div>
-    </div>
-    <div class="cl-bar"><span style="width:${(pctNow*100).toFixed(1)}%"></span></div>
-    <div class="cl-legend">Al final del Año ${HY} facturas <b>${eur(nowRR)}</b> al año: el <b>${pct(pctNow)}</b> del techo.</div>
-    <div class="cl-marks">Hitos: ${CEIL_MARKS.map(fmtHit).join(' &nbsp;·&nbsp; ')} <span class="out">— atenuados, los que caen fuera del plan de ${HY} años</span></div>
-    <div class="cl-note">La cartera satura cuando las altas de cada mes igualan a las bajas. Con una retención anual ${scope==='mre'?('del '+num1(V.retMre)+'%'):scope==='auto'?('del '+num1(V.retAuto)+'%'):('del '+num1(V.retAuto)+'% en Auto y del '+num1(V.retMre)+'% en MRE')}, ese equilibrio está en <b>${eur0(cap.cart)} pólizas</b> y <b>${eur(cap.prim)}</b> de primas en gestión. El acercamiento es asintótico: el último tramo es el más lento, por eso pasar del 95% al 99% cuesta casi tanto como llegar al 95%.</div>`;
+  const fmtHit=k=>{const m=hit[k], p=Math.round(k*100);
+    if(m==null) return `<div class="cl-row out"><span>${p}% del techo</span><b>+100 años</b></div>`;
+    return `<div class="cl-row${m>HM?' out':''}"><span>${p}% del techo</span><b>mes ${m} · Año ${yOf(m)}</b></div>`;};
+  const ret= scope==='mre'? ('del '+num1(V.retMre)+'%') : scope==='auto'? ('del '+num1(V.retAuto)+'%')
+           : ('del '+num1(V.retAuto)+'% en Auto y del '+num1(V.retMre)+'% en MRE');
+  return card('Facturación máxima', eur(cap.fact), `comisión al año con la cartera ${S.of} saturada`)
+    + card('Tiempo hasta el techo',
+        t95!=null? ('Año '+yOf(t95)) : '+100 años',
+        t95!=null? `mes ${t95}, para llegar al 95%${t95>HM?` — fuera de los ${HY} años del plan`:''}` : 'no se alcanza el 95% en un siglo')
+    + `<div class="panel cl-card"><div class="k">Recorrido al final del plan</div>
+        <div class="v">${pct(pctNow)}</div>
+        <div class="cl-bar"><span style="width:${(pctNow*100).toFixed(1)}%"></span></div>
+        <div class="s">facturas ${eur(nowRR)} al año de los ${eur(cap.fact)} del techo</div></div>`
+    + `<div class="panel cl-card"><div class="k">Hitos hasta el techo</div><div class="cl-rows">${CEIL_MARKS.map(fmtHit).join('')}</div>
+        <div class="s">atenuados, los que caen fuera del plan de ${HY} años</div></div>`
+    + `<div class="panel cl-card cl-wide cl-soft"><div class="k">Por qué hay un techo</div>
+        <div class="s">La cartera satura cuando las altas de cada mes igualan a las bajas. Con una retención anual ${ret}, ese equilibrio está en <b>${eur0(cap.cart)} pólizas</b> y <b>${eur(cap.prim)}</b> de primas en gestión. El acercamiento es asintótico: el último tramo es el más lento, por eso pasar del 95% al 99% cuesta casi tanto como llegar al 95%.</div></div>`;
 }
 
 function render(){
@@ -1275,13 +1307,16 @@ function render(){
   const perLabel= YF? ('Año '+YF) : (HY+' años');
   const e=tot.ebi;
   document.getElementById('scopeHint').textContent=S.hint;
-  const empSuffix= SCOPE==='all'? 'gestores + estructura' : 'parte imputada a este ramo';
+  syncParamScope();
+  const empSuffix= SCOPE==='all'
+    ? `plantilla total · ${num0(tot.dirA||0)} en Auto + ${num0(tot.dirM||0)} en MRE`
+    : 'plantilla propia del ramo';
   document.getElementById('kpis').innerHTML=`
    <div class="kpi"><div class="k">Ingresos · ${perLabel}</div><div class="v">${eur0(tot.itot)}€</div><div class="s">comisión del periodo</div></div>
    <div class="kpi"><div class="k">EBITDA · ${perLabel}</div><div class="v ${e>=0?'pos':'neg'}">${eur0(e)}€</div><div class="s">Margen ${pct(tot.margin)}</div></div>
    <div class="kpi"><div class="k">Cartera fin · ${perLabel}</div><div class="v">${eur0(tot.cart)}</div><div class="s">pólizas en vigor</div></div>
    <div class="kpi"><div class="k">Prima en gestión · ${perLabel}</div><div class="v">${eur0(tot.prim)}€</div><div class="s">primas en vigor a fin de periodo</div></div>
-   <div class="kpi"><div class="k">Empleados · ${perLabel}</div><div class="v">${SCOPE==='all'?num0((tot.dir||0)+(tot.est||0)):num1((tot.dir||0)+(tot.est||0))}</div><div class="s">${empSuffix}</div></div>
+   <div class="kpi"><div class="k">Empleados · ${perLabel}</div><div class="v">${num0(tot.dir||0)}</div><div class="s">${empSuffix}</div></div>
    <div class="kpi"><div class="k">Break-even · ${S.label}</div><div class="v ${beS?'pos':'neg'}">${beS?('Mes '+beS):('>'+HM+'m')}</div><div class="s">${beS?('cartera ≈ '+eur0(cartBE)+' pólizas'):('no en '+HY+' años')}</div></div>`;
   document.getElementById('be').innerHTML = beS
     ? `<b>Punto de equilibrio ${S.of}:</b> el EBITDA mensual se vuelve positivo en el <b>mes ${beS}</b> (cartera ≈ ${eur0(cartBE)} pólizas).${SCOPE==='all'?` El EBITDA acumulado pasa a positivo ${R.beAcc?('en el mes '+R.beAcc):('fuera de los '+HM+' meses')}.`:''}`
@@ -1411,8 +1446,8 @@ function chartImage(type,buckets,gran,W,H){
 
 // build accordion form
 const form=document.getElementById('form');
-CFG.forEach(([title,cls,items],gi)=>{
-  const item=document.createElement('div'); item.className='acc-item';
+CFG.forEach(([title,cls,scope,items],gi)=>{
+  const item=document.createElement('div'); item.className='acc-item'; item.dataset.scope=scope;
   const head=document.createElement('div'); head.className='acc-head '+cls;
   head.innerHTML=`<span>${title}</span><span class="chev">▾</span>`;
   head.onclick=()=>item.classList.toggle('collapsed');
@@ -1440,7 +1475,7 @@ CFG.forEach(([title,cls,items],gi)=>{
   item.appendChild(head); item.appendChild(bodyEl); form.appendChild(item);
 });
 function fmtVal(key,type){const v=V[key];return type==='pct'?(v+'%'):(type==='eur'?eur0(v)+'€':eur0(v));}
-CFG.forEach(([,,items])=>items.forEach(([key,,type,rng])=>{if(rng){const el=document.getElementById('v_'+key);if(el)el.textContent=fmtVal(key,type);}}));
+CFG.forEach(([,,,items])=>items.forEach(([key,,type,rng])=>{if(rng){const el=document.getElementById('v_'+key);if(el)el.textContent=fmtVal(key,type);}}));
 
 function buildYearOptions(){
   let o='<option value="0">Todos</option>';
@@ -1458,6 +1493,20 @@ document.getElementById('segScope').addEventListener('click',e=>{
 });
 function syncScopeSeg(){
   document.querySelectorAll('#segScope button').forEach(b=>b.classList.toggle('on',b.dataset.s===SCOPE));
+}
+// el panel de parámetros sigue al ámbito: en un ramo concreto solo se ven sus propios
+// parámetros; los costes compartidos se editan desde «Todo el negocio»
+function syncParamScope(){
+  document.querySelectorAll('#form .acc-item').forEach(it=>{
+    it.hidden = (SCOPE!=='all') && it.dataset.scope!==SCOPE;
+  });
+  const form=document.getElementById('form');
+  if(form) form.classList.toggle('one-group',SCOPE!=='all');
+  const el=document.getElementById('ctrlScope'); if(!el) return;
+  const S=SCOPES[SCOPE]||SCOPES.all;
+  el.innerHTML= SCOPE==='all'
+    ? 'Editando <b>todos los parámetros</b>: los dos ramos y los costes que comparten. Cambia el ámbito de arriba para ver solo los de un ramo.'
+    : `Editando solo los parámetros <b>${S.label}</b>, incluida su plantilla, que es propia del ramo. Los costes compartidos (alquiler, tecnología, RC, asesoría, cuotas, SS e inflación) se editan en <b>Todo el negocio</b>.`;
 }
 document.getElementById('segGran').addEventListener('click',e=>{
   if(e.target.tagName!=='BUTTON')return; GRAN=e.target.dataset.g;
@@ -2718,7 +2767,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElemen
 document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-dos]'); if(b){ e.preventDefault(); openDossier(b.dataset.dos); } });
 
 function ourMetrics(){
-  const R=compute(V), Y= YF>0?YF:HY, t=totalCol(R.mon,Y), emp=(t.dir||0)+(t.est||0);
+  const R=compute(V), Y= YF>0?YF:HY, t=totalCol(R.mon,Y), emp=t.dir||0;
   const otrosSinRetro=(t.esub||0)-(t.colab||0);
   return {key:'you', name:'Tu modelo', color:'#1f3864', year:Y,
     empleados:emp, ingresos:t.itot, primas:t.prim,
@@ -3010,7 +3059,7 @@ function buildReport(){
     <div><span>Cartera fin Año ${HY}</span><b>${eur0(tot.cart)} pólizas</b></div>
     <div><span>Break-even</span><b>${R.beM?('Mes '+R.beM):('>'+HM+' meses')}</b></div></div>`;
   h+=`<h2>Supuestos del modelo</h2><div class="rsup">`;
-  CFG.forEach(([title,,items])=>{
+  CFG.forEach(([title,,,items])=>{
     h+=`<table class="rt"><thead><tr><th colspan="2">${title}</th></tr></thead><tbody>`;
     items.forEach(([key,label,type])=>{h+=`<tr><td>${label}</td><td class="rv">${fmtVal(key,type)}</td></tr>`;});
     h+=`</tbody></table>`;
@@ -3154,7 +3203,7 @@ function buildModelSheets(){
   const PREF={};                                       // clave -> 'Supuestos'!$B$fila
   const supRows=[['Grupo / Parámetro','Valor','Unidad']];
   let sr=1;                                             // fila actual (1-based)
-  CFG.forEach(([title,,items])=>{
+  CFG.forEach(([title,,,items])=>{
     sr++; supRows.push([title]);
     items.forEach(([key,label,type])=>{ sr++; supRows.push([label,_rnd(V[key],6),type==='pct'?'%':(type==='eur'?'€':'')]); PREF[key]="'"+SH_SUP+"'!$B$"+sr; });
   });
@@ -3166,7 +3215,7 @@ function buildModelSheets(){
   // ---- Motor MENSUAL (meses en filas, métricas en columnas) ----
   const ORDER=['mes','anio','inf','opsA','a_new','a_cini','a_cfin','a_cnew','a_cren','a_inew','a_iren','a_itot','a_colab',
     'xs','m_new','m_cini','m_cfin','m_cnew','m_cren','m_inew','m_iren','m_itot','m_colab',
-    'itot','cart','newt','prim','dNeed','dir','est','cdir','cest','sal','ss','psub',
+    'itot','cart','newt','prim','dNeedA','dNeedM','dNeed','dirA','dirM','dir','cdirA','cdirM','cdir','sal','ss','psub',
     'alq','pue','sw','rc','ase','cuo','colab','otr','esub','gtot','ebi','ebac','margin','beEbi','beEbac'];
   const HEAD={mes:'Mes',anio:'Año',inf:'Inflación (factor)',opsA:'Auto · operaciones/mes',a_new:'Auto · pólizas nuevas',
     a_cini:'Auto · cartera inicio',a_cfin:'Auto · cartera fin',a_cnew:'Auto · cartera nueva',a_cren:'Auto · cartera renov.',
@@ -3175,7 +3224,8 @@ function buildModelSheets(){
     m_cnew:'MRE · cartera nueva',m_cren:'MRE · cartera renov.',m_inew:'MRE · ingreso nuevo',m_iren:'MRE · ingreso renov.',
     m_itot:'MRE · ingreso total',m_colab:'MRE · comisión colab.',itot:'Ingresos totales',cart:'Cartera total',newt:'Pólizas nuevas',
     prim:'Primas intermediadas',dNeed:'Carga de trabajo (FTE)',
-    dir:'Gestión directa (nº)',est:'Estructura (nº)',cdir:'Coste gestión directa',cest:'Coste estructura',
+    dNeedA:'Auto · carga (FTE)',dNeedM:'MRE · carga (FTE)',dirA:'Auto · plantilla (nº)',dirM:'MRE · plantilla (nº)',
+    dir:'Plantilla total (nº)',cdirA:'Auto · coste sueldos',cdirM:'MRE · coste sueldos',cdir:'Sueldos brutos',
     sal:'Salarios brutos',ss:'Seguridad Social',psub:'Subtotal personal',alq:'Alquiler y oficina',pue:'Suministros/puesto',
     sw:'Software y CRM',rc:'RC y seguros',ase:'Asesoría/gestoría',cuo:'Cuotas DGSFP',colab:'Comisión colaboradores',
     otr:'Otros e imprevistos',esub:'Subtotal estructura',gtot:'TOTAL GASTOS',ebi:'EBITDA',ebac:'EBITDA acumulado',
@@ -3216,18 +3266,22 @@ function buildModelSheets(){
     cell.cart=F(`${C.a_cfin}${R}+${C.m_cfin}${R}`);
     cell.newt=F(`${C.a_new}${R}+${C.m_new}${R}`);
     cell.prim=F(`${C.a_cfin}${R}*${P.primaAuto}+${C.m_cfin}${R}*${P.primaMre}`);
-    cell.dNeed=F(`${C.cart}${R}/${P.polEmp}`);
-    cell.dir=F(`MAX(1,ROUNDUP(${C.dNeed}${R},0))`);
-    cell.est=F(`IF(${C.dir}${R}>=${P.estThreshold},MAX(1,ROUNDUP(${C.dir}${R}/${P.estRatio},0)),0)`);
-    cell.cdir=F(`IF(AND(${C.mes}${R}>=${P.salDir_from},${C.mes}${R}<=${P.salDir_to}),${C.dir}${R}*${P.salDir}*${C.inf}${R},0)`);
-    cell.cest=F(`IF(AND(${C.mes}${R}>=${P.salE_from},${C.mes}${R}<=${P.salE_to}),${C.est}${R}*${P.salE}*${C.inf}${R},0)`);
-    cell.sal=F(`${C.cdir}${R}+${C.cest}${R}`);
+    cell.dNeedA=F(`${C.a_cfin}${R}/${P.polEmpAuto}`);
+    cell.dNeedM=F(`${C.m_cfin}${R}/${P.polEmpMre}`);
+    cell.dNeed=F(`${C.dNeedA}${R}+${C.dNeedM}${R}`);
+    cell.dirA=F(`IF(${C.a_cfin}${R}>0,MAX(1,ROUNDUP(${C.dNeedA}${R},0)),0)`);
+    cell.dirM=F(`IF(${C.m_cfin}${R}>0,MAX(1,ROUNDUP(${C.dNeedM}${R},0)),0)`);
+    cell.dir=F(`${C.dirA}${R}+${C.dirM}${R}`);
+    cell.cdirA=F(`IF(AND(${C.mes}${R}>=${P.salDirAuto_from},${C.mes}${R}<=${P.salDirAuto_to}),${C.dirA}${R}*${P.salDirAuto}*${C.inf}${R},0)`);
+    cell.cdirM=F(`IF(AND(${C.mes}${R}>=${P.salDirMre_from},${C.mes}${R}<=${P.salDirMre_to}),${C.dirM}${R}*${P.salDirMre}*${C.inf}${R},0)`);
+    cell.cdir=F(`${C.cdirA}${R}+${C.cdirM}${R}`);
+    cell.sal=F(`${C.cdir}${R}`);
     cell.ss=F(`${C.sal}${R}*${P.ss}/100`);
     cell.psub=F(`${C.sal}${R}+${C.ss}${R}`);
     const gate=(k,expr)=>`IF(AND(${C.mes}${R}>=${P[k+'_from']},${C.mes}${R}<=${P[k+'_to']}),${expr},0)`;
     cell.alq=F(gate('alq',`${P.alq}`));
-    cell.pue=F(gate('pue',`(${C.dir}${R}+${C.est}${R})*${P.puesto}`));
-    cell.sw=F(gate('sw',`${P.swbase}+(${C.dir}${R}+${C.est}${R})*${P.swemp}`));
+    cell.pue=F(gate('pue',`${C.dir}${R}*${P.puesto}`));
+    cell.sw=F(gate('sw',`${P.swbase}+${C.dir}${R}*${P.swemp}`));
     cell.rc=F(gate('rc',`${P.rcbase}/12+${P.rcpct}/100*${C.itot}${R}`));
     cell.ase=F(gate('ase',`${P.ases}`));
     cell.cuo=F(gate('cuo',`${P.cuotas}`));
@@ -3248,7 +3302,7 @@ function buildModelSheets(){
   const eRange=(key,r1,r2)=>`'${SH_MON}'!${C[key]}${r1}:${C[key]}${r2}`;
   // mapa clave de LÍNEA del P&L -> clave de columna del motor
   const KC={newt:'newt',cart:'cart',prim:'prim',ingA:'a_itot',a_inew:'a_inew',a_iren:'a_iren',
-    ingM:'m_itot',m_inew:'m_inew',m_iren:'m_iren',itot:'itot',sal:'sal',dir:'dir',dNeed:'dNeed',cdir:'cdir',est:'est',cest:'cest',
+    ingM:'m_itot',m_inew:'m_inew',m_iren:'m_iren',itot:'itot',sal:'sal',dir:'dir',dirA:'dirA',dirM:'dirM',dNeed:'dNeed',cdir:'cdir',
     ss:'ss',psub:'psub',esub:'esub',alq:'alq',pue:'pue',sw:'sw',rc:'rc',ase:'ase',cuo:'cuo',colab:'colab',otr:'otr',
     gtot:'gtot',ebi:'ebi',margin:'margin',ebac:'ebac'};
   const STOCKK=new Set(STOCK);                         // claves de stock (valor a fin de periodo)
@@ -3294,8 +3348,8 @@ function buildModelSheets(){
   // ---- Unit economics (fin de horizonte) con fórmulas ----
   const L_=dEnd;
   const itotL=eRef('itot',L_),cartL=eRef('cart',L_),colabL=eRef('colab',L_),gtotL=eRef('gtot',L_),
-        primL=eRef('prim',L_),ebiL=eRef('ebi',L_),dirL=eRef('dir',L_),estL=eRef('est',L_),psubL=eRef('psub',L_);
-  const hc=`(${dirL}+${estL})`;
+        primL=eRef('prim',L_),ebiL=eRef('ebi',L_),dirL=eRef('dir',L_),psubL=eRef('psub',L_);
+  const hc=`(${dirL})`;
   const ue=[
     ['Unit economics (run-rate fin Año '+HY+')'],[],
     ['Por póliza · €/año','Valor'],
@@ -3351,7 +3405,7 @@ document.getElementById('xls').onclick=exportXlsx;
 
 // --- sincroniza todos los controles de la UI con el estado actual de V ---
 function syncControls(){
-  CFG.forEach(([,,items])=>items.forEach(([key,,type,rng])=>{
+  CFG.forEach(([,,,items])=>items.forEach(([key,,type,rng])=>{
     const inp=document.getElementById('inp_'+key);
     if(inp) inp.value=V[key];
     if(rng){ const el=document.getElementById('v_'+key); if(el) el.textContent=fmtVal(key,type); }
@@ -3458,7 +3512,8 @@ document.getElementById('reset').onclick=()=>{
 };
 window.addEventListener('resize',()=>render());
 
-// panel de parámetros: se despliega hacia abajo desde el botón de la topbar
+// panel de parámetros: vive en el dashboard, bajo el selector de ramo, y se despliega
+// desde el botón de la barra de filtros (que desde otra pestaña lleva primero al dashboard)
 (function(){
   const wrap=document.getElementById('ctrlWrap'), btn=document.getElementById('ctrlToggle');
   const KEY='cbp_ctrl_open';
@@ -3472,7 +3527,12 @@ window.addEventListener('resize',()=>render());
   let ini=false;
   try{ ini=localStorage.getItem(KEY)==='1'; }catch(e){}
   set(ini);
-  btn.onclick=()=>set(!wrap.classList.contains('on'));
+  btn.onclick=()=>{
+    const open=!wrap.classList.contains('on');
+    // el panel solo existe dentro del dashboard: si estamos en otra pestaña, vamos allí
+    if(open && ACTIVE_TAB!=='dash'){ activateTab('dash'); set(true); wrap.scrollIntoView({block:'nearest',behavior:'smooth'}); return; }
+    set(open);
+  };
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'&&wrap.classList.contains('on')&&!document.querySelector('.dos-backdrop.on,.mail-backdrop.on')) set(false);
   });
